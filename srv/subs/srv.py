@@ -57,7 +57,7 @@ async def response(channel="/buffer", branch=None, test=False):
 async def broker_main():
     """The broker, serving both clients, forever.
     """
-    broker = mqttools.Broker(('localhost', BROKER_PORT))
+    broker = mqttools.Broker(('0.0.0.0', BROKER_PORT))
     await broker.serve_forever()
 
 
@@ -65,7 +65,7 @@ async def main(orm):
     global db_ref
     db_ref = orm
     await asyncio.gather(
-        broker_main(),
+        #broker_main(),
         response(channel="/buffer", branch="/test"),
         response(channel="/test", test=True)
     )
