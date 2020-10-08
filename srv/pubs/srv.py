@@ -26,15 +26,15 @@ async def prepareFields(subs: str = "routine_preapare_fields",server="localhost"
             ),
         ]:
             message = dict(header=subs, payload=dict(query="save", data=data))
-            client.publish('/net', json.dumps(message).encode('utf-8'))
+            client.publish('/net/update', json.dumps(message).encode('utf-8'))
 
 
-async def pubsMonitor(subs: str = "monitor",server="localhost",port=BROKER_PORT):
+async def pubsMonitor(subs: str = "net/geo",server="localhost",port=BROKER_PORT):
     while True:
         async with mqttools.Client(server, port, connect_delays=[0.1]) as client:
             await client.subscribe("/"+subs)
             message = dict(header=subs, payload=dict(query="get", data=dict(
                 measurement="positions_register"
             )))
-            client.publish('/net', json.dumps(message).encode('utf-8'))
-            time.sleep(0.25)
+            client.publish('/net/refresh', json.dumps(message).encode('utf-8'))
+            time.sleep(5)

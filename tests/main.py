@@ -68,7 +68,7 @@ async def broker_main():
     """The broker, serving both clients, forever.
     """
 
-    broker = mqttools.Broker(('localhost', BROKER_PORT))
+    broker = mqttools.Broker(('0.0.0.0', BROKER_PORT))
     await broker.serve_forever()
 
 

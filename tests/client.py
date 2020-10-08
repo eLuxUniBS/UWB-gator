@@ -8,7 +8,7 @@ import mqttools
 BROKER_PORT = 10008
 
 
-async def publisher():
+async def test_publisher():
     async with mqttools.Client('localhost', BROKER_PORT, connect_delays=[0.1]) as client:
         await client.subscribe('/node_01')
         message = dict(header='node_01', payload=dict(query="save", data=dict(
@@ -37,4 +37,16 @@ async def publisher():
         print("MESSAGE RECEIVED",message,topic)
 
 
-asyncio.run(publisher())
+
+async def pubsMonitor():
+    async with mqttools.Client('localhost', BROKER_PORT, connect_delays=[0.1]) as client:
+        await client.subscribe('/routine')
+        message = dict(header='monitor', payload=dict(query="get", data=dict(
+            measurement="positions_register"
+        )))
+        client.publish('/net', json.dumps(message).encode('utf-8'))
+        topic, message = await client.messages.get()
+        print("MESSAGE RECEIVED",message,topic)
+
+
+asyncio.run(test_publisher())

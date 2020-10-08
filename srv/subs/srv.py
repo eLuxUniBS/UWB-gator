@@ -5,10 +5,12 @@
  |        |<-- pong ---|        |<-- pong ---|             |
  +--------+            +--------+            +-------------+
 """
+from datetime import datetime as dt
 import json
 import time
 import asyncio
 import mqttools
+
 
 db_ref = None
 BROKER_PORT = 10008
@@ -24,7 +26,7 @@ async def response(channel="/buffer", branch=None, test=False):
     """Wait for the client to publish to /ping, and publish /pong in
     response.
     """
-    global  db_ref
+    global db_ref
     client = await start_client()
     await client.subscribe(channel)
 
@@ -39,15 +41,21 @@ async def response(channel="/buffer", branch=None, test=False):
             print(byte_content)
             print(e)
             continue
-        print(f'echo_client: Got {content} on {topic}.')
+        print(f'{dt.now()} Client: Got {content} on {topic}.')
         if test:
             continue
-        #
+        # DESIGN per spegnere il client
         # if topic is None:
         #     print('Echo client connection lost.')
         #     break
-        response=db_ref.query(content["payload"])
-        content["payload"]=response
+        print("CHANNEL",channel)
+
+        if channel.find("/net/refresh")!=-1 or channel.find("/net/update")!=-1:
+            response = db_ref.query(content["payload"])
+            content["payload"] = response
+        else:
+            content["payload"] = dict(response=202)
+        print("RESP IS",content)
         client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
         if branch is not None:
@@ -65,7 +73,10 @@ async def main(orm):
     global db_ref
     db_ref = orm
     await asyncio.gather(
-        #broker_main(),
         response(channel="/buffer", branch="/test"),
+        response(channel="/net"),
+        response(channel="/net/refresh"),
+        response(channel="/net/update"),
+        #response(channel="/collect/position"),
         response(channel="/test", test=True)
     )

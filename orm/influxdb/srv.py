@@ -19,10 +19,13 @@ class DB:
             return dict(error="no data")
         cmd_label = query[0]["query"]
         cmd_value = query[0]["data"]
+        print("QUERY IS",query)
         if cmd_label.strip().lower() == "save":
             return self.save(**cmd_value)
         elif cmd_label.strip().lower() == "get":
-            return self.retrieve(**cmd_value)
+            buffer=self.retrieve(**cmd_value)
+            print("BUFFER",buffer)
+            return buffer
         return dict(error="no command")
 
     def save(self, measurement=None, **dataset):
