@@ -37,4 +37,4 @@ async def pubsMonitor(subs: str = "net/geo",server="localhost",port=BROKER_PORT)
                 measurement="positions_register"
             )))
             client.publish('/net/refresh', json.dumps(message).encode('utf-8'))
-            time.sleep(5)
+            time.sleep(0.2)
