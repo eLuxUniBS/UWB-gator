@@ -49,13 +49,16 @@ async def response(channel="/buffer", branch=None, test=False):
         #     print('Echo client connection lost.')
         #     break
         print("CHANNEL",channel)
-
         if channel.find("/net/refresh")!=-1 or channel.find("/net/update")!=-1:
             response = db_ref.query(content["payload"])
             content["payload"] = response
+        if channel.find("/collect/position")!=-1:
+            print("CONTENT COLLECT IS\n",content)
+            response = db_ref.query(content["payload"])
+            content["payload"] = dict(response=202)
         else:
             content["payload"] = dict(response=202)
-        print("RESP IS",content)
+        #print("RESP IS",content)
         client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
         if branch is not None:
@@ -77,6 +80,6 @@ async def main(orm):
         response(channel="/net"),
         response(channel="/net/refresh"),
         response(channel="/net/update"),
-        #response(channel="/collect/position"),
+        response(channel="/collect/position"),
         response(channel="/test", test=True)
     )
