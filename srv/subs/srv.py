@@ -45,7 +45,7 @@ async def response(channel="/buffer", branch=None, test=False):
         if test:
             continue
         # DESIGN per spegnere il client
-        # if topic is None:
+        # if topic is None:th
         #     print('Echo client connection lost.')
         #     break
         print("CHANNEL",channel)
@@ -75,10 +75,8 @@ async def main(orm):
     global db_ref
     db_ref = orm
     await asyncio.gather(
-        response(channel="/buffer", branch="/test"),
         response(channel="/net"),
         response(channel="/net/refresh"),
         response(channel="/net/update"),
-        response(channel="/collect/position"),
-        response(channel="/test", test=True)
+        response(channel="/collect/position")
     )

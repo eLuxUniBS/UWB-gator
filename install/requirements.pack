@@ -1,2 +1,5 @@
 mqttools
 influxdb
+flask
+flask-jwt-extended[asymmetric_cripto]
+cryptography
