@@ -6,7 +6,7 @@ class UserObj(object):
     def __init__(self, username, roles):
         self.username = username
         self.roles = roles
-        self.token_randomize = "randomize_token"#str(uuid4())
+        self.token_randomize = str(uuid4())
 
     @property
     def token_access(self):
