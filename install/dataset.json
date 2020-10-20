@@ -1,0 +1,30 @@
+{
+  "Net": [
+    {
+      "name": "eLux",
+      "cfg": {},
+      "avaiable": false
+    },
+    {
+      "name": "ESEB",
+      "cfg": {},
+      "avaiable": true
+    }
+  ],
+  "SubNet": [
+    {
+      "name": "Lab",
+      "net": "eLux"
+    },
+    {
+      "name": "Test Area",
+      "net": "ESEB"
+    }
+  ],
+  "Node": [
+    {"name": ""},
+    {"macaddress": ""},
+    {"subnet": ""},
+    {"cfg": ""}
+  ]
+}

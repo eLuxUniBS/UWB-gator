@@ -28,6 +28,7 @@ async def test_publisher():
         print(f'client: Got {byte_content} on {topic}.')
         if message["payload"].get("response",None)!= 200:
             print("ERRORE")
+            print(message)
             return None
         message = dict(header='node_01', payload=dict(query="get", data=dict(
             measurement="positions_register"

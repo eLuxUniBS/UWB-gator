@@ -1,1 +1,2 @@
-from . import influxdb as orm
+from . import db
+from . import dbseries as orm
