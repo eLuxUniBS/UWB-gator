@@ -1,7 +1,8 @@
-from bson import ObjectId
-
-from orm import db
 import json
+from time import time
+from datetime import datetime as dt
+from bson import ObjectId
+from agent.position import format_message_position
 import orm
 
 input_data_json = dict()
@@ -100,6 +101,10 @@ def create_net():
 
 
 if __name__ == "__main__":
+    # DB SERIES
+    orm.dbseries.client.last.drop_db()
+    orm.dbseries.client.last.create_db()
+    # DB
     prepare_dataset(file_csv="dataset.csv")
     drop_database()
 
@@ -115,4 +120,11 @@ if __name__ == "__main__":
                     dict(_id=ObjectId(node_id)))
                 collect_node[net.name][subnet.name][node.pk.__str__()] \
                     = node.to_dict()
-    print(collect_node)
+                orm.dbseries.client.last.create(**format_message_position(
+                    id_name=node.cfg["name_dev"],
+                    mac_address=node.macaddress,
+                    val_time=0))
+                orm.dbseries.client.log.create(**format_message_position(
+                    id_name=node.cfg["name_dev"],
+                    mac_address=node.macaddress,
+                    ts_send=dt.utcnow().timestamp() * 1e6))

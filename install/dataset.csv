@@ -20,6 +20,6 @@ n18 ,tokendefault,ancora,area,n18,Ancora SX,eseb,north,DWC327,EE:C9:20:24:B6:3F,
 n19 ,tokendefault,ancora,area,n19,Ancora DX,eseb,north,DW5628,CF:62:E0:96:1F:45,decawave
 n20 ,tokenpersonalecentrale,tag,operatore,n20,Token Utente,eseb,north,DW0AB5,D5:4E:F4:0C:F6:26,decawave
 n21 ,tokendefault,tag,operatore,n21,Utente 1,eseb,north,DW181F,DF:EC:47:91:BF:31,decawave
-n22,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala DX,eseb,v2,DW4836,D6:CC:4C:D7:7C:AF,decawave
-n23,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala SX,eseb,v2,DW4836,D6:CC:4C:D7:7C:AF,decawave
-n24,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala DX,eseb,v2,DW4836,D6:CC:4C:D7:7C:AF,decawave
+n22,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala DX,eseb,v2,DW48DX,D6:CC:4C:D7:7C:AF,decawave
+n23,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala FR,eseb,v2,DW48FR,D6:CC:4C:D7:7C:AF,decawave
+n24,tokenveicolostrumento,tag,veicolo,n22,Scavatore Pala SX,eseb,v2,DW48SX,D6:CC:4C:D7:7C:AF,decawave

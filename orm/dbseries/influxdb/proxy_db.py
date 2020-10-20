@@ -12,6 +12,9 @@ class DB:
         self.client = InfluxDBClient(host=host, port=port, username=username,
                                      password=password, database=db_name)
 
+    def drop_db(self):
+        self.client.drop_database(self.db_name)
+
     def create_db(self):
         self.client.create_database(self.db_name)
 
@@ -19,10 +22,10 @@ class DB:
         try:
             content = dict(
                 measurement=measurement if measurement is not None else self.measurement_name,
-                time=dt.utcnow(),
                 **dataset
-
             )
+            if content.get("time", None) is None:
+                content["time"] = dt.utcnow()
             self.client.write_points([content])
             return dict(response=200)
         except Exception as e:
@@ -31,7 +34,7 @@ class DB:
 
     def read(self, measurement=None):
         if measurement is None:
-            return dict(response=400)
+            measurement=self.measurement_name
         try:
             return dict(response=200, data=self.client.query(
                 "select * from {}".format(measurement)).raw)

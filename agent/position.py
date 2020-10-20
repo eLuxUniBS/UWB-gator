@@ -1,10 +1,26 @@
-import mqttools
+import mqttools, time
 from datetime import datetime as dt
-
-from bson import ObjectId
-
 from agent.skeleton import MQTTAgent
 import orm
+
+
+def format_message_position(*args, val_time: time.time = None,
+                            mac_address: str = "AA:AA:AA:AA:AA:AA",
+                            x: float = 0.0, y: float = 0.0, z: float = 0.0,
+                            q: int = -1,
+                            id_name: str = "TEST000",
+                            ts_send: time.time = None,
+                            ts_rec: time.time = None, **kwargs) -> dict:
+    buffer = dict(
+        fields=dict(mac=mac_address, x=x, y=y, z=z, q=q),
+        tags=dict(id=id_name, ts_rec=int(dt.utcnow().timestamp() * 1e6)))
+    if val_time is not None:
+        buffer["time"] = int(val_time)
+    if ts_send is not None:
+        buffer["tags"]["ts_send"] = int(ts_send)
+    if ts_rec is not None:
+        buffer["tags"]["ts_rec"] = int(ts_rec)
+    return buffer
 
 
 async def pong(*args, **kwargs):
@@ -12,8 +28,8 @@ async def pong(*args, **kwargs):
 
 
 async def position_refresh(topic="", raw={}, header={}, payload={},
-                          client: mqttools.Client = None,
-                          cb_next_hop: MQTTAgent.publisher = None):
+                           client: mqttools.Client = None,
+                           cb_next_hop: MQTTAgent.publisher = None):
     """
     Aggiorna tutti i subs con le ultime posizioni registrate!
     :param topic:
@@ -26,25 +42,15 @@ async def position_refresh(topic="", raw={}, header={}, payload={},
     """
     collect_node = dict()
     try:
-        orm.dbseries.client["log"]
-        for net in orm.db.Net.objects.raw(dict(avaiable=True)):
-            collect_node[net.name] = dict()
-            for subnet in net.subnet:
-                collect_node[net.name][subnet.name] = dict()
-                obj_subnet = orm.db.SubNet.objects.get(dict(_id=subnet.pk))
-                for node_id in obj_subnet.node_assigned:
-                    node = orm.db.Node.objects.get(
-                        dict(_id=ObjectId(node_id)))
-                    collect_node[net.name][subnet.name][node.pk.__str__()] \
-                        = node.to_dict()
+        content = orm.dbseries.client.last.read()
+        await cb_next_hop(topic="/geo", payload=content)
     except Exception as e:
         print("Errore in DB", e)
-    await cb_next_hop(topic="/net", payload=collect_node)
 
 
 async def position_update(topic="", raw={}, header={}, payload={},
-                         client: mqttools.Client = None,
-                         cb_next_hop: MQTTAgent.publisher = None):
+                          client: mqttools.Client = None,
+                          cb_next_hop: MQTTAgent.publisher = None):
     """
     Salva la posizione ricevuta: eventualmente impone un impulso di
     aggiornamento su tutta la rete
@@ -58,7 +64,7 @@ async def position_update(topic="", raw={}, header={}, payload={},
     """
     if client is None:
         print("Impossibile aggiornare la rete")
-    if payload.get("refresh_position",None) is not None:
+    if payload.get("refresh_position", None) is not None:
         await cb_next_hop(topic="/geo/refresh", payload={
             "message":
                 "Ricevuto {}#{} alle {}, e rinviato alle {}".format(

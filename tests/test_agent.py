@@ -8,7 +8,10 @@ single_agent = agent.skeleton.MQTTAgent(server="localhost",
                                             "/net/refresh":
                                                 agent.network.network_refresh,
                                             "/net/update":
-                                                agent.network.pong
+                                                agent.network.pong,
+                                            "/geo/ping": agent.position.pong,
+                                            "/geo/refresh": agent.position.position_refresh,
+                                            "/geo/update": agent.position.position_update
                                         })
 
 
