@@ -11,11 +11,11 @@ async def pong(*args, **kwargs):
     print("PONG", args, "\n", kwargs)
 
 
-async def network_refresh(topic="", raw={}, header={}, payload={},
+async def position_refresh(topic="", raw={}, header={}, payload={},
                           client: mqttools.Client = None,
                           cb_next_hop: MQTTAgent.publisher = None):
     """
-    Aggiorna tutti i subs con la nuova rete!
+    Aggiorna tutti i subs con le ultime posizioni registrate!
     :param topic:
     :param raw:
     :param header:
@@ -26,6 +26,7 @@ async def network_refresh(topic="", raw={}, header={}, payload={},
     """
     collect_node = dict()
     try:
+        orm.dbseries.client["log"]
         for net in orm.db.Net.objects.raw(dict(avaiable=True)):
             collect_node[net.name] = dict()
             for subnet in net.subnet:
@@ -41,15 +42,27 @@ async def network_refresh(topic="", raw={}, header={}, payload={},
     await cb_next_hop(topic="/net", payload=collect_node)
 
 
-async def network_update(topic="", raw={}, header={}, payload={},
+async def position_update(topic="", raw={}, header={}, payload={},
                          client: mqttools.Client = None,
                          cb_next_hop: MQTTAgent.publisher = None):
+    """
+    Salva la posizione ricevuta: eventualmente impone un impulso di
+    aggiornamento su tutta la rete
+    :param topic:
+    :param raw:
+    :param header:
+    :param payload:
+    :param client:
+    :param cb_next_hop:
+    :return:
+    """
     if client is None:
         print("Impossibile aggiornare la rete")
-    await cb_next_hop(topic="/net/refresh", payload={
-        "message":
-            "Ricevuto {}#{} alle {}, e rinviato alle {}".format(
-                header.get("name", "-missing-"),
-                header.get("uuid", "-missing-"),
-                header.get("ts", "-missing-"),
-                dt.utcnow().__str__())})
+    if payload.get("refresh_position",None) is not None:
+        await cb_next_hop(topic="/geo/refresh", payload={
+            "message":
+                "Ricevuto {}#{} alle {}, e rinviato alle {}".format(
+                    header.get("name", "-missing-"),
+                    header.get("uuid", "-missing-"),
+                    header.get("ts", "-missing-"),
+                    dt.utcnow().__str__())})

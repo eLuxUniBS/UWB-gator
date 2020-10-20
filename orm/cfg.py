@@ -7,10 +7,12 @@ DB_PARAM = {
            "db_port": "20127"
            },
     "dbseries": {
+        "driver": "influxdb",
         "host": 'localhost',
         "port": "8086",
         "username": "root",
         "password": "root",
-        "database": "test_secutor_series"
+        "database": "test_secutor_series",
+        "db_tables":["last","log"]
     }
 }

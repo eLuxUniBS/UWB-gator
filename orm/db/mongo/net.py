@@ -7,11 +7,12 @@ class Node(MongoModel):
     macaddress = fields.CharField()
     cfg = fields.DictField()
 
+    def to_dict(self):
+        return dict(name=self.name,maccaddres=self.macaddress,cfg=self.cfg)
 
 class SubNet(MongoModel):
     name = fields.CharField()
-    node_assigned = fields.ReferenceField(Node,
-                                          on_delete=fields.ReferenceField.DO_NOTHING)
+    node_assigned = fields.ListField()
 
 
 class Net(MongoModel):
@@ -21,5 +22,4 @@ class Net(MongoModel):
     name = fields.CharField()
     cfg = fields.DictField()
     avaiable = fields.BooleanField(default=True)
-    subnet = fields.ReferenceField(SubNet,
-                                   on_delete=fields.ReferenceField.DO_NOTHING)
+    subnet = fields.EmbeddedDocumentListField(SubNet)

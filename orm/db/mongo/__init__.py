@@ -2,13 +2,13 @@ from orm.cfg import DB_PARAM
 
 if DB_PARAM.get("db", dict()).get("driver", "") == "mongo":
     from pymodm import connect
-
+    config=DB_PARAM["db"]
     connect("mongodb://{user}:{password}@{host}:{port}/{db}".format
-            (user=DB_PARAM["db"]["db_username"],
-             password=DB_PARAM["db"]["db_password"],
-             host=DB_PARAM["db"]["db_host"],
-             port=DB_PARAM["db"]["db_port"],
-             db=DB_PARAM["db"]["db_name"])
+            (user=config["db_username"],
+             password=config["db_password"],
+             host=config["db_host"],
+             port=config["db_port"],
+             db=config["db_name"])
             )
     from .net import *
     from .user import *

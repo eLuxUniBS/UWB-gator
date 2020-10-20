@@ -1,9 +1,11 @@
 from pymodm import MongoModel, fields
 from pymongo import IndexModel, TEXT
 
+
 class Vehicle(MongoModel):
-    vehicle_name=fields.CharField()
-    vehicle_class=fields.CharField()
+    vehicle_name = fields.CharField()
+    vehicle_class = fields.CharField()
+
 
 class VehicleKeyPair(MongoModel):
     """
@@ -16,11 +18,12 @@ class VehicleKeyPair(MongoModel):
                                        on_delete=fields.ReferenceField.DO_NOTHING)
 
     class Meta:
-        indexes = [IndexModel([('key_signed', TEXT)]), IndexModel([('key_opened', TEXT)])]
+        indexes = [IndexModel([('key_signed', TEXT)]),
+                   IndexModel([('key_opened', TEXT)])]
+
 
 class EquipmentVehicle(MongoModel):
-    key_signed = fields.ReferenceField(VehicleKeyPair,
-                                       on_delete=fields.ReferenceField.DO_NOTHING)
+    key_signed = fields.ListField()
     assigned_from = fields.DateTimeField()
-    assigned_until=fields.DateTimeField()
-    configuration=fields.DictField()
+    assigned_until = fields.DateTimeField()
+    configuration = fields.DictField()
