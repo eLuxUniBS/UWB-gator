@@ -1,4 +1,4 @@
-import json
+import json,os
 from time import time
 from datetime import datetime as dt
 from bson import ObjectId
@@ -8,6 +8,7 @@ import orm
 input_data_json = dict()
 input_data_csv = list()
 
+local_dir=os.path.dirname(os.path.abspath(__file__))
 
 def read_keys_by_line(line: str = None):
     if line is None:
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     orm.dbseries.client.last.drop_db()
     orm.dbseries.client.last.create_db()
     # DB
-    prepare_dataset(file_csv="dataset.csv")
+    prepare_dataset(file_csv=os.path.join(local_dir,"dataset.csv"))
     drop_database()
 
     create_net()
