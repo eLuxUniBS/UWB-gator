@@ -4,7 +4,7 @@ if DB_PARAM.get("db", dict()).get("driver", "") == "mongo":
     from pymodm import connect
     config=DB_PARAM["db"]
     user_credentials=""
-    if config.get("db_username",None) is None or config.get("db_password",None) is None:
+    if config.get("db_username",None) is not None and config.get("db_password",None) is not None:
             user_credentials="{user}:{password}@".format(user=config["db_username"],
              password=config["db_password"])
     connect("mongodb://{user_credentials}{host}:{port}/{db}".format
