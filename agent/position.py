@@ -14,12 +14,16 @@ def format_message_position(*args, val_time: time.time = None,
     buffer = dict(
         fields=dict(mac=mac_address, x=x, y=y, z=z, q=q),
         tags=dict(id=id_name, ts_rec=int(dt.utcnow().timestamp() * 1e6)))
-    if val_time is not None:
-        buffer["time"] = int(val_time)
-    if ts_send is not None:
-        buffer["tags"]["ts_send"] = int(ts_send)
-    if ts_rec is not None:
-        buffer["tags"]["ts_rec"] = int(ts_rec)
+    return set_message_position(**buffer)
+
+
+def set_message_position(**buffer):
+    if buffer.get("time") is not None:
+        buffer["time"] = int(buffer["time"])
+    if buffer["tags"].get("ts_send", None) is not None:
+        buffer["tags"]["ts_send"] = int(buffer["tags"]["ts_send"])
+    if buffer["tags"].get("ts_rec", None) is not None:
+        buffer["tags"]["ts_rec"] = int(buffer["tags"]["ts_rec"])
     return buffer
 
 
@@ -64,15 +68,13 @@ async def position_update(topic="", raw={}, header={}, payload={},
     """
     if client is None:
         print("Impossibile aggiornare la rete")
-    print("topic",topic,"\n",header,"\n",payload,"\n--\n")
-    # orm.dbseries.client.last.create(**format_message_position(
-    #     id_name=node.cfg["name_dev"],
-    #     mac_address=node.macaddress,
-    #     val_time=0))
-    # orm.dbseries.client.log.create(**format_message_position(
-    #     id_name=node.cfg["name_dev"],
-    #     mac_address=node.macaddress,
-    #     ts_send=dt.utcnow().timestamp() * 1e6))
+    print("topic", topic, "\n", header, "\n", payload, "\n--\n")
+
+    if payload["query"].strip().lower() == "save":
+        last_copy=payload
+        last_copy["time"]=0
+        orm.dbseries.client.last.create(**set_message_position(**last_copy))
+        orm.dbseries.client.log.create(**set_message_position(**payload))
     if payload.get("refresh_position", None) is not None:
         await cb_next_hop(topic="/geo/refresh", payload={
             "message":
