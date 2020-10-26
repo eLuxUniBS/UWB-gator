@@ -1,7 +1,7 @@
 import asyncio
 from agent.skeleton import MQTTAgent
 
-agent = MQTTAgent(server="localhost", port="10008")
+agent = MQTTAgent(server="192.168.0.2", port="10008")
 
 
 async def test_pubs():
