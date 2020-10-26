@@ -28,6 +28,7 @@ class MQTTAgent:
         """
         buffer = []
         for k in self.manifest.keys():
+            print("SUBS",k)
             buffer.append(self.subscriber(input_topic=k,
                                           cb=self.manifest.get(k)
                                           ))
@@ -40,6 +41,7 @@ class MQTTAgent:
         :param cb:
         :return:
         """
+        print("INPUT TOPIC",input_topic)
         client = await self.start_client()
         await client.subscribe(topic=input_topic)
         print("SUBS", input_topic)
