@@ -1,7 +1,7 @@
 import asyncio
 import agent
 
-single_agent = agent.skeleton.MQTTAgent(server="192.168.0.2",
+single_agent = agent.skeleton.MQTTAgent(server="0.0.0.0",
                                         port="10008",
                                         manifest={
                                             "/net/ping": agent.network.pong,

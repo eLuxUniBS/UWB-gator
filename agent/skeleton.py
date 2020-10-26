@@ -57,7 +57,7 @@ class MQTTAgent:
                 print(e)
                 continue
 
-            print(f'{dt.now()}[SUBS][{topic_content}] := {str(content)[:100]}')
+            print(f'{dt.now()}[SUBS][{topic_content}] := {str(content)}')
             if cb is not None and topic_content is not None:
                 try:
                     await cb(topic=topic_content, raw=content,
@@ -87,7 +87,7 @@ class MQTTAgent:
         ).encode('utf-8')
         client = await self.start_client()
         await client.subscribe(topic=topic)
-        print(f'{dt.now()}[PUBS][{topic}] := {str(message)[:100]}')
+        print(f'{dt.now()}[PUBS][{topic}] := {str(message)}')
         client.publish(topic=topic,
                        message=message,
                        retain=retain)

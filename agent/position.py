@@ -64,6 +64,15 @@ async def position_update(topic="", raw={}, header={}, payload={},
     """
     if client is None:
         print("Impossibile aggiornare la rete")
+    print("topic",topic,"\n",header,"\n",payload,"\n--\n")
+    # orm.dbseries.client.last.create(**format_message_position(
+    #     id_name=node.cfg["name_dev"],
+    #     mac_address=node.macaddress,
+    #     val_time=0))
+    # orm.dbseries.client.log.create(**format_message_position(
+    #     id_name=node.cfg["name_dev"],
+    #     mac_address=node.macaddress,
+    #     ts_send=dt.utcnow().timestamp() * 1e6))
     if payload.get("refresh_position", None) is not None:
         await cb_next_hop(topic="/geo/refresh", payload={
             "message":
