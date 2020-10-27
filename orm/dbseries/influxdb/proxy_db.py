@@ -24,6 +24,7 @@ class DB:
                 measurement=measurement if measurement is not None else self.measurement_name,
                 **dataset
             )
+            print(content)
             if content.get("time", None) is None:
                 content["time"] = dt.utcnow()
             self.client.write_points([content])

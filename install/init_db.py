@@ -124,7 +124,7 @@ if __name__ == "__main__":
                 orm.dbseries.client.last.create(**format_message_position(
                     id_name=node.cfg["name_dev"],
                     mac_address=node.macaddress,
-                    val_time=0))
+                    val_time=0,LAST=True))
                 orm.dbseries.client.log.create(**format_message_position(
                     id_name=node.cfg["name_dev"],
                     mac_address=node.macaddress,

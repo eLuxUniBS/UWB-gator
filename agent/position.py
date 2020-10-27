@@ -7,19 +7,26 @@ import orm
 def format_message_position(*args, val_time: time.time = None,
                             mac_address: str = "AA:AA:AA:AA:AA:AA",
                             x: float = 0.0, y: float = 0.0, z: float = 0.0,
-                            q: int = -1,
+                            q=-1,
                             id_name: str = "TEST000",
                             ts_send: time.time = None,
-                            ts_rec: time.time = None, **kwargs) -> dict:
-    buffer = dict(
-        fields=dict(mac=mac_address, x=x, y=y, z=z, q=q),
-        tags=dict(id=id_name, ts_rec=int(dt.utcnow().timestamp() * 1e6)))
+                            ts_rec: time.time = None, LAST=False,**kwargs) -> \
+        dict:
+    buffer = dict(time=0 if LAST else int(dt.utcnow().timestamp() * 1e6),
+                  fields=dict(mac=mac_address, x=x, y=y, z=z, q=float(q)),
+                  tags=dict(
+                      id=id_name,
+                      ts=0 if LAST else int(dt.utcnow().timestamp() * 1e6)
+                  )
+                  )
     return set_message_position(**buffer)
 
 
 def set_message_position(**buffer):
-    if buffer.get("time") is not None:
-        buffer["time"] = int(buffer["time"])
+    if buffer.get("time",None) is None:
+        buffer["time"]=int(dt.utcnow().timestamp() * 1e6)
+    else:
+        buffer["time"]=int(buffer["time"])
     if buffer["tags"].get("ts_send", None) is not None:
         buffer["tags"]["ts_send"] = int(buffer["tags"]["ts_send"])
     if buffer["tags"].get("ts_rec", None) is not None:
@@ -68,18 +75,13 @@ async def position_update(topic="", raw={}, header={}, payload={},
     """
     if client is None:
         print("Impossibile aggiornare la rete")
-    print("topic", topic, "\n", header, "\n", payload, "\n--\n")
-
     if payload["query"].strip().lower() == "save":
-        last_copy=payload
-        last_copy["time"]=0
-        orm.dbseries.client.last.create(**set_message_position(**last_copy))
-        orm.dbseries.client.log.create(**set_message_position(**payload))
-    if payload.get("refresh_position", None) is not None:
-        await cb_next_hop(topic="/geo/refresh", payload={
-            "message":
-                "Ricevuto {}#{} alle {}, e rinviato alle {}".format(
-                    header.get("name", "-missing-"),
-                    header.get("uuid", "-missing-"),
-                    header.get("ts", "-missing-"),
-                    dt.utcnow().__str__())})
+        payload["data"]["fields"]["q"] = float(payload["data"]["fields"]["q"])
+        orm.dbseries.client.log.create(**set_message_position(**payload[
+            "data"]))
+        if payload["data"]["fields"]["mac"] != "MARKER":
+            last_copy = payload["data"]
+            last_copy["tags"]["ts"] = 0
+            last_copy["time"] = 0
+            orm.dbseries.client.last.create(**set_message_position(**last_copy))
+    await cb_next_hop(topic="/geo/refresh", payload={})
