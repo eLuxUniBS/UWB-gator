@@ -84,4 +84,4 @@ async def position_update(topic="", raw={}, header={}, payload={},
             last_copy["tags"]["ts"] = 0
             last_copy["time"] = 0
             orm.dbseries.client.last.create(**set_message_position(**last_copy))
-    await cb_next_hop(topic="/geo/refresh", payload={})
+    position_refresh(cb_next_hop=cb_next_hop)

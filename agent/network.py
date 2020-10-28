@@ -46,4 +46,4 @@ async def network_update(topic="", raw={}, header={}, payload={},
                          cb_next_hop: MQTTAgent.publisher = None):
     if client is None:
         print("Impossibile aggiornare la rete")
-    await cb_next_hop(topic="/net/refresh", payload={})
+    network_refresh(cb_next_hop=cb_next_hop)
