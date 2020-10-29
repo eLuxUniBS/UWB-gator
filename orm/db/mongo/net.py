@@ -1,8 +1,10 @@
-
+from bson import ObjectId
 from pymodm import MongoModel, fields
 
+from orm.db.mongo.base_model import BaseModel
 
-class Node(MongoModel):
+
+class Node(BaseModel):
     name = fields.CharField()
     macaddress = fields.CharField()
     cfg = fields.DictField()
@@ -10,12 +12,19 @@ class Node(MongoModel):
     def to_dict(self):
         return dict(name=self.name,maccaddres=self.macaddress,cfg=self.cfg)
 
-class SubNet(MongoModel):
+    @classmethod
+    def get_by_id(cls,id):
+        return cls.objects.get(dict(_id=ObjectId(id)))
+
+class SubNet(BaseModel):
     name = fields.CharField()
     node_assigned = fields.ListField()
 
+    @classmethod
+    def get_by_id(cls,id):
+        return cls.objects.get(dict(_id=ObjectId(id)))
 
-class Net(MongoModel):
+class Net(BaseModel):
     """
     Con questa classe posso "immaginare" di segnare chi abbia "aperto" le chiavi
     """

@@ -12,7 +12,7 @@ DB_PARAM = {
         "port": "8086",
         "username": "root",
         "password": "root",
-        "database": "test_secutor_operatore_terra",
+        "database": "test_secutor_sample",
         "db_tables":["last","log"]
     }
 }

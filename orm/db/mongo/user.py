@@ -1,9 +1,11 @@
-from pymongo import TEXT
+from pymongo import TEXT,HASHED
 from pymongo.operations import IndexModel
 from pymodm import fields, MongoModel, EmbeddedMongoModel
 
+from .base_model import BaseModel
 
-class User(MongoModel):
+
+class User(BaseModel):
     matricola = fields.CharField()
     avaiable = fields.BooleanField(default=True)
 
@@ -11,7 +13,7 @@ class User(MongoModel):
         indexes = [IndexModel([('matricola', TEXT)])]
 
 
-class Profile(MongoModel):
+class Profile(BaseModel):
     email = fields.EmailField()
     user = fields.ReferenceField(User,
                                  on_delete=fields.ReferenceField.DO_NOTHING)
@@ -20,7 +22,7 @@ class Profile(MongoModel):
     cognome = fields.CharField()
 
 
-class ClientKeyPair(MongoModel):
+class ClientKeyPair(BaseModel):
     """
     Accoppiamento chiavi
     """
@@ -32,11 +34,11 @@ class ClientKeyPair(MongoModel):
                                        on_delete=fields.ReferenceField.DO_NOTHING)
 
     class Meta:
-        indexes = [IndexModel([('key_signed', TEXT)]),
-                   IndexModel([('key_added', TEXT)])]
+        indexes = [IndexModel([('key_signed', HASHED)]),
+                   IndexModel([('key_added', HASHED)])]
 
 
-class EquipmentUser(MongoModel):
+class EquipmentUser(BaseModel):
     key_signed = fields.ReferenceField(ClientKeyPair,
                                        on_delete=fields.ReferenceField.DO_NOTHING)
     assigned_from = fields.DateTimeField()

@@ -13,9 +13,6 @@ obj_agent = agent.skeleton.MQTTAgent(
             "/geo/ping": dict(core=agent.position.pong),
             "/geo/refresh": dict(core=agent.position.position_refresh),
             "/geo/update": dict(core=agent.position.position_query),
-        },
-        "pubs":{
-            "/net/ping":dict(loop=False,wait_seconds=0.5)
         }
     }
 )

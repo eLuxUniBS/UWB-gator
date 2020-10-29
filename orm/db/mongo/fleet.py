@@ -1,13 +1,14 @@
-from pymodm import MongoModel, fields
-from pymongo import IndexModel, TEXT
+from pymodm import fields
+from pymongo import IndexModel,HASHED
 
+from .base_model import BaseModel
 
-class Vehicle(MongoModel):
+class Vehicle(BaseModel):
     vehicle_name = fields.CharField()
     vehicle_class = fields.CharField()
 
 
-class VehicleKeyPair(MongoModel):
+class VehicleKeyPair(BaseModel):
     """
     Accoppiamento chiavi
     """
@@ -18,11 +19,11 @@ class VehicleKeyPair(MongoModel):
                                        on_delete=fields.ReferenceField.DO_NOTHING)
 
     class Meta:
-        indexes = [IndexModel([('key_signed', TEXT)]),
-                   IndexModel([('key_opened', TEXT)])]
+        indexes = [IndexModel([('key_signed', HASHED)]),
+                   IndexModel([('key_opened', HASHED)])]
 
 
-class EquipmentVehicle(MongoModel):
+class EquipmentVehicle(BaseModel):
     key_signed = fields.ListField()
     assigned_from = fields.DateTimeField()
     assigned_until = fields.DateTimeField()

@@ -2,8 +2,9 @@ from pymongo import TEXT
 from pymongo.operations import IndexModel
 from pymodm import MongoModel, fields
 
+from .base_model import BaseModel
 
-class LogOpening(MongoModel):
+class LogOpening(BaseModel):
     """
     Con questa classe posso "immaginare" di segnare chi abbia "aperto" le chiavi
     """
@@ -11,11 +12,8 @@ class LogOpening(MongoModel):
     when = fields.DateTimeField()
     body = fields.DictField()
 
-    class Meta:
-        indexes =[IndexModel([('key_signed', TEXT)])]
 
-
-class UserPatents(MongoModel):
+class UserPatents(BaseModel):
     user = fields.ReferenceField("User",
                                  on_delete=fields.ReferenceField.DO_NOTHING)
     vehicle = fields.ReferenceField("Vehicle",

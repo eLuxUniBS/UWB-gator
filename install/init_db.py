@@ -129,3 +129,6 @@ if __name__ == "__main__":
                     id_name=node.cfg["name_dev"],
                     mac_address=node.macaddress,
                     ts_send=dt.utcnow().timestamp() * 1e6))
+    for k in collect_node:
+        print("K",k)
+        print(collect_node.get(k))

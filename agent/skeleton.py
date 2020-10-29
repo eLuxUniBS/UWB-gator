@@ -1,4 +1,6 @@
+import asyncio
 import json, mqttools
+import time
 from uuid import uuid4
 from datetime import datetime as dt
 
@@ -8,30 +10,52 @@ class MQTTAgent:
     Permette di generare infiniti agenti, attivati su specifici topic (in subs e pubs) a cui è possibile asscoiare una specifica callback (cb)
     """
 
-    def __init__(self, server, port, name="standard", manifest={}):
+    def __init__(self, server, port, name="standard", manifest=dict, ):
         self.client_uuid = uuid4().__str__()
         self.client_name = name
         self.server = server
         self.port = int(port)
-        self.manifest = manifest
+        self.subs_manifest = manifest.get("subs", dict())
+        self.pubs_manifest = manifest.get("pubs", dict())
 
     async def start_client(self, resume_session=False):
         client = mqttools.Client(self.server, self.port, connect_delays=[0.1])
         await client.start(resume_session=resume_session)
         return client
 
+    def generate(self):
+        return self.generate_subscriber() + self.generate_publisher()
+
     def generate_subscriber(self):
         """
-        Generazione di sottoscrittori tramite manifest
+        Generazione di sottoscrittori tramite subs_manifest
         :param resume_session:
         :return:
         """
         buffer = []
-        for k in self.manifest.keys():
-            print("SUBS",k)
-            buffer.append(self.subscriber(input_topic=k,
-                                          cb=self.manifest.get(k)
-                                          ))
+        for k in self.subs_manifest.keys():
+            print("SUBS", k)
+            if self.subs_manifest.get(k).get("wrapper", None) is None:
+                buffer.append(self.subscriber(input_topic=k,
+                                              cb=self.subs_manifest.get(k).get(
+                                                  "core")
+                                              ))
+        return buffer
+
+    def generate_publisher(self):
+        """
+
+        :return:
+        """
+        buffer = []
+        for k in self.pubs_manifest.keys():
+            print("PUBS", k)
+            print(self.pubs_manifest.get(k))
+            cfg = self.pubs_manifest.get(k)
+            buffer.append(self.publisher(
+                topic=k,
+                **cfg
+            ))
         return buffer
 
     async def subscriber(self, input_topic=None, cb=None):
@@ -41,10 +65,8 @@ class MQTTAgent:
         :param cb:
         :return:
         """
-        print("INPUT TOPIC",input_topic)
         client = await self.start_client()
         await client.subscribe(topic=input_topic)
-        print("SUBS", input_topic)
         while True:
             topic_content, byte_content = await client.messages.get()
             if byte_content is None:
@@ -67,27 +89,40 @@ class MQTTAgent:
                 except Exception as e:
                     print(e)
                     print("CB ERRORE")
-                except:
-                    print("CB ERRORE EMPTY")
 
-    async def publisher(self, topic: str = None, header: dict = None,
-                        payload={},
-                        retain=False):
+    async def publisher(self, topic: str = None,
+                        header: dict = None,
+                        payload= None,
+                        retain=False,
+                        loop=False, wait_seconds=0.5):
         if topic is None:
             return None
         if header is None:
             header = dict(uuid=self.client_uuid,
                           name=self.client_name,
                           ts=dt.utcnow().__str__())
+        client = await self.start_client()
         message = json.dumps(
             dict(
                 header=header,
-                payload=payload
+                payload=payload if payload is not None else dict()
             )
         ).encode('utf-8')
-        client = await self.start_client()
-        await client.subscribe(topic=topic)
         print(f'{dt.now()}[PUBS][{topic}] := {str(message)}')
-        client.publish(topic=topic,
-                       message=message,
-                       retain=retain)
+        if loop:
+            while True:
+                client.publish(topic=topic,
+                               message=message,
+                               retain=retain)
+                time.sleep(wait_seconds)
+                header["ts"]=dt.utcnow().__str__()
+                message = json.dumps(
+                    dict(
+                        header=header,
+                        payload=payload if payload is not None else dict()
+                    )
+                ).encode('utf-8')
+        else:
+            client.publish(topic=topic,
+                           message=message,
+                           retain=retain)
