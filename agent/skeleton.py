@@ -49,8 +49,7 @@ class MQTTAgent:
         """
         buffer = []
         for k in self.pubs_manifest.keys():
-            print("PUBS", k)
-            print(self.pubs_manifest.get(k))
+            print("PUBS", k, self.pubs_manifest.get(k))
             cfg = self.pubs_manifest.get(k)
             buffer.append(self.publisher(
                 topic=k,
@@ -79,7 +78,8 @@ class MQTTAgent:
                 print(e)
                 continue
 
-            print(f'{dt.now()}[SUBS][{topic_content}] := {str(content)}')
+            print(
+                f'{dt.now()}[SUBS][{topic_content}] := {str(content.get("header", dict()))}')
             if cb is not None and topic_content is not None:
                 try:
                     await cb(topic=topic_content, raw=content,
@@ -92,37 +92,38 @@ class MQTTAgent:
 
     async def publisher(self, topic: str = None,
                         header: dict = None,
-                        payload= None,
+                        payload=None,
                         retain=False,
-                        loop=False, wait_seconds=0.5):
+                        loop=False,
+                        wait_seconds=0.5):
+        async def _loop_pubs():
+            client= await self.start_client()
+            while True:
+                message["header"]["ts"] = dt.utcnow().__str__()
+                print(f'{dt.now()}[PUBS][{topic}] := {str(header)}')
+                client.publish(topic=topic,
+                               message=json.dumps(message).encode('utf-8'),
+                               retain=retain)
+                time.sleep(wait_seconds)
+
+        async def _single_pubs():
+            client = await self.start_client()
+            print(f'{dt.now()}[PUBS][{topic}] := {str(header)}')
+            client.publish(topic=topic,
+                           message=json.dumps(message).encode('utf-8'),
+                           retain=retain)
+
         if topic is None:
             return None
         if header is None:
             header = dict(uuid=self.client_uuid,
                           name=self.client_name,
                           ts=dt.utcnow().__str__())
-        client = await self.start_client()
-        message = json.dumps(
-            dict(
-                header=header,
-                payload=payload if payload is not None else dict()
-            )
-        ).encode('utf-8')
-        print(f'{dt.now()}[PUBS][{topic}] := {str(message)}')
+        message = dict(
+            header=header,
+            payload=payload if payload is not None else dict()
+        )
         if loop:
-            while True:
-                client.publish(topic=topic,
-                               message=message,
-                               retain=retain)
-                time.sleep(wait_seconds)
-                header["ts"]=dt.utcnow().__str__()
-                message = json.dumps(
-                    dict(
-                        header=header,
-                        payload=payload if payload is not None else dict()
-                    )
-                ).encode('utf-8')
+            await _loop_pubs()
         else:
-            client.publish(topic=topic,
-                           message=message,
-                           retain=retain)
+            await _single_pubs()
