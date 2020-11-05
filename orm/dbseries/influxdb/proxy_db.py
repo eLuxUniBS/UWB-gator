@@ -3,7 +3,7 @@ from datetime import datetime as dt
 
 
 class DB:
-    def __init__(self, db_name=None, db_table=None, host="localhost",
+    def __init__(self, db_name=None, db_table=None, host="192.168.1.83",
                  port="8086", username="root", password="root"):
         self.db_name = db_name
         self.measurement_name = db_table

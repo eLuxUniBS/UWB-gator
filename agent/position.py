@@ -1,8 +1,7 @@
-import asyncio
-
-import mqttools, time
+import asyncio,json,mqttools, time
+import uuid
 from datetime import datetime as dt
-from agent.skeleton import MQTTAgent
+from agent.skeleton import MQTTAgent, prepare_message
 import orm
 
 
@@ -36,11 +35,11 @@ def set_message_position(**buffer):
     return buffer
 
 
-async def pong(*args, **kwargs):
+def pong(*args, **kwargs):
     print("PONG", args, "\n", kwargs)
 
 
-async def position_refresh(
+def position_refresh(
         topic="", raw={}, header={}, payload={},
         client: mqttools.Client = None,
         cb_next_hop: MQTTAgent.publisher = None):
@@ -56,12 +55,13 @@ async def position_refresh(
     """
     try:
         content = orm.dbseries.client.last.read()
-        await cb_next_hop(topic="/geo", payload=content)
+        client.publish(topic="/geo", message=json.dumps(prepare_message(
+            topic="/geo",payload=content)).encode("UTF-8"),retain=False)
     except Exception as e:
-        print("Errore in DB", e)
+        print(__name__,"Errore in DB", e)
 
 
-async def position_query(topic="", raw={}, header={}, payload={},
+def position_query(topic="", raw={}, header={}, payload={},
                          client: mqttools.Client = None,
                          cb_next_hop: MQTTAgent.publisher = None):
     """
@@ -75,12 +75,12 @@ async def position_query(topic="", raw={}, header={}, payload={},
     :param cb_next_hop:
     :return:
     """
-    if client is None:
-        print("Impossibile aggiornare la rete")
+    # if client is None:
+    #     print("Impossibile aggiornare la posizione")
     if payload["query"].strip().lower() == "save":
-        save_position(payload)
+        save_position(payload["payload"])
     if payload["query"].strip().lower() == "update":
-        save_position(payload)
+        save_position(payload["payload"])
 
 
 def save_position(payload):
@@ -89,6 +89,7 @@ def save_position(payload):
     :param payload:
     :return:
     """
+    print("P",payload)
     payload["data"]["fields"]["q"] = float(payload["data"]["fields"]["q"])
     orm.dbseries.client.log.create(**set_message_position(**payload[
         "data"]))
@@ -98,3 +99,53 @@ def save_position(payload):
     last_copy["tags"]["ts"] = 0
     last_copy["time"] = 0
     orm.dbseries.client.last.create(**set_message_position(**last_copy))
+
+
+
+async def standalone(topic_root="/geo"):
+    repeat=True
+    client=None
+    while True:
+        client=await set_client()
+        # await client.subscribe(topic=topic_root+'/#')
+        await client.subscribe(topic=topic_root+'/ping')
+        await client.subscribe(topic=topic_root+'/refresh')
+        await client.subscribe(topic=topic_root+'/update')
+
+        while repeat:
+            try:
+                topic, message = await client.messages.get()
+                print("T",topic,"M",message)
+                if topic is None and message is None:
+                    repeat=False
+                if topic is not None and type(topic) is str:
+                    topic = topic.strip()
+                    print("TOPIC", topic, time.time())
+                    # if topic == topic_root:
+                    #     pong(**json.loads(message))
+                    if topic == topic_root + "/ping":
+                        pong(**json.loads(message))
+                    elif topic == topic_root + "/refresh":
+                        print("START REFRESH")
+                        position_refresh(client=client)
+                    elif topic == topic_root + "/update":
+                        position_query(**json.loads(message))
+                    elif topic.find(topic_root.replace("#", "")) == -1:
+                        print("SIDE TOPIC", topic)
+                        print(message)
+            except Exception as e:
+                print("ERRORE IN",e)
+        repeat=True
+        print("INIZIO DISCONNESSIONE")
+        client.disconnect()
+        print("DISCONNESSO")
+
+async def set_client(client_id="Position"):
+    client = mqttools.Client(client_id=client_id+"_"+uuid.uuid4().__str__(), host="192.168.1.83", port=10008)
+
+    await client.start()
+    return client
+
+
+if __name__=="__main__":
+    asyncio.run(standalone())

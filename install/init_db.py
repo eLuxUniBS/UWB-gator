@@ -37,8 +37,7 @@ def prepare_dataset(file_json=None, file_csv=None):
         buffer_scheme = scheme.copy()
         data = line.split(",")
         for index in range(0, len(data)):
-            buffer_scheme[list(buffer_scheme.keys())[index]] = data[
-                index].strip()
+            buffer_scheme[list(buffer_scheme.keys())[index]] = data[index].strip()
         input_data_csv.append(buffer_scheme)
 
 
@@ -101,7 +100,7 @@ def create_net():
             subnet.save()
 
 
-if __name__ == "__main__":
+def init():
     # DB SERIES
     orm.dbseries.client.last.drop_db()
     orm.dbseries.client.last.create_db()
@@ -132,3 +131,6 @@ if __name__ == "__main__":
     for k in collect_node:
         print("K",k)
         print(collect_node.get(k))
+
+if __name__ == "__main__":
+    init()

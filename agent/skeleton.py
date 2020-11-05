@@ -5,6 +5,19 @@ from uuid import uuid4
 from datetime import datetime as dt
 
 
+def prepare_message(topic=None,client_uuid="-missing-",client_name="-missing-",header=None,payload=None):
+    if topic is None:
+        return None
+    if header is None:
+        header = dict(uuid=client_uuid,
+                      name=client_name,
+                      ts=dt.utcnow().__str__())
+    message = dict(
+        header=header,
+        payload=payload if payload is not None else dict()
+    )
+    return message
+
 class MQTTAgent:
     """
     Permette di generare infiniti agenti, attivati su specifici topic (in subs e pubs) a cui è possibile asscoiare una specifica callback (cb)
@@ -19,12 +32,14 @@ class MQTTAgent:
         self.pubs_manifest = manifest.get("pubs", dict())
 
     async def start_client(self, resume_session=False):
-        client = mqttools.Client(self.server, self.port, connect_delays=[0.1])
+        client = mqttools.Client(self.server, self.port)
         await client.start(resume_session=resume_session)
         return client
 
     def generate(self):
-        return self.generate_subscriber() + self.generate_publisher()
+        a=self.generate_subscriber() + self.generate_publisher()
+        print(a)
+        return a
 
     def generate_subscriber(self):
         """
@@ -51,6 +66,7 @@ class MQTTAgent:
         for k in self.pubs_manifest.keys():
             print("PUBS", k, self.pubs_manifest.get(k))
             cfg = self.pubs_manifest.get(k)
+            print(cfg)
             buffer.append(self.publisher(
                 topic=k,
                 **cfg
@@ -97,19 +113,17 @@ class MQTTAgent:
                         loop=False,
                         wait_seconds=0.5):
         async def _loop_pubs():
-            client= await self.start_client()
             while True:
                 message["header"]["ts"] = dt.utcnow().__str__()
                 print(f'{dt.now()}[PUBS][{topic}] := {str(header)}')
-                client.publish(topic=topic,
+                await client.publish(topic=topic,
                                message=json.dumps(message).encode('utf-8'),
                                retain=retain)
-                time.sleep(wait_seconds)
+                asyncio.sleep(wait_seconds)
 
         async def _single_pubs():
-            client = await self.start_client()
             print(f'{dt.now()}[PUBS][{topic}] := {str(header)}')
-            client.publish(topic=topic,
+            await client.publish(topic=topic,
                            message=json.dumps(message).encode('utf-8'),
                            retain=retain)
 
@@ -123,6 +137,7 @@ class MQTTAgent:
             header=header,
             payload=payload if payload is not None else dict()
         )
+        client=await self.start_client()
         if loop:
             await _loop_pubs()
         else:

@@ -1,16 +1,18 @@
-import mqttools
+import asyncio
+
+import mqttools,json
 from datetime import datetime as dt
 
 
-from agent.skeleton import MQTTAgent
+from agent.skeleton import MQTTAgent, prepare_message
 import orm
 
 
-async def pong(*args, **kwargs):
+def pong(*args, **kwargs):
     print("PONG", args, "\n", kwargs)
 
 
-async def network_refresh(topic="/net", raw={}, header={}, payload={},
+def network_refresh(topic="/net", raw={}, header={}, payload={},
                           client: mqttools.Client = None,
                           cb_next_hop: MQTTAgent.publisher = None):
     """
@@ -35,12 +37,41 @@ async def network_refresh(topic="/net", raw={}, header={}, payload={},
                     collect_node[net.name][subnet.name][node.pk.__str__()] \
                         = node.to_dict()
     except Exception as e:
-        print("Errore in DB", e)
-    await cb_next_hop(topic=topic, payload=collect_node)
+        print(__name__,"Errore in DB", e)
+    client.publish(topic=topic, message=json.dumps(prepare_message(
+            topic="/geo",payload=collect_node)).encode("UTF-8"))
 
 
-async def network_query(topic="", raw={}, header={}, payload={},
+def network_query(topic="", raw={}, header={}, payload={},
                         client: mqttools.Client = None,
                         cb_next_hop: MQTTAgent.publisher = None):
     if client is None:
         print("Impossibile aggiornare la rete")
+
+
+
+async def standalone(topic_root="/net"):
+    client = mqttools.Client(client_id="Network",host="192.168.1.83",port=10008)
+
+    await client.start()
+    await client.subscribe(topic=topic_root+'/#')
+
+    while True:
+        topic, message = await client.messages.get()
+        topic=topic.strip()
+        print("TOPIC", topic)
+        if topic == topic_root:
+            pong(**json.loads(message))
+        elif topic == topic_root+"/ping":
+            pong(**json.loads(message))
+        elif topic == topic_root+"/refresh":
+            network_refresh(client=client)
+        elif topic == topic_root+"/update":
+            network_query(**json.loads(message))
+        elif topic.find(topic_root)!=-1:
+            print("SIDE TOPIC",topic)
+            print(message)
+
+
+if __name__=="__main__":
+    asyncio.run(standalone())
