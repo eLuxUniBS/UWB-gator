@@ -13,7 +13,7 @@ import mqttools
 
 
 db_ref = None
-BROKER_PORT = 10008
+BROKER_PORT = 30000
 
 
 async def start_client():
@@ -32,6 +32,7 @@ async def response(channel="/buffer", branch=None, test=False):
 
     while True:
         topic, byte_content = await client.messages.get()
+        print("TOPIC",topic,"\nCONTENT",byte_content)
         if byte_content is None:
             continue
         try:

@@ -3,7 +3,7 @@ import asyncio
 from .srv import prepareFields, pubsMonitor
 
 
-BROKER_PORT = 10008
+BROKER_PORT = 30000
 async def main(localhost="localhost",port=BROKER_PORT):
     await asyncio.gather(
         prepareFields(server=localhost, port=port),

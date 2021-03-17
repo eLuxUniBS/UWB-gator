@@ -1,4 +1,4 @@
-import json,os
+import json, os
 from time import time
 from datetime import datetime as dt
 from bson import ObjectId
@@ -8,7 +8,8 @@ import orm
 input_data_json = dict()
 input_data_csv = list()
 
-local_dir=os.path.dirname(os.path.abspath(__file__))
+local_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def read_keys_by_line(line: str = None):
     if line is None:
@@ -19,7 +20,31 @@ def read_keys_by_line(line: str = None):
     return buffer
 
 
+def prepare_dataset_by_folder(folder_csv=None, folder_json=None):
+    """
+
+    :return:
+    """
+    if folder_json is not None:
+        input_params = "file_json"
+        folder = folder_json
+    elif folder_csv is not None:
+        input_params = "file_csv"
+        folder = folder_csv
+    else:
+        return None
+    for entry in os.listdir(folder):
+        if os.path.isfile(os.path.join(folder, entry)):
+            prepare_dataset(**{input_params: os.path.join(folder, entry)})
+
+
 def prepare_dataset(file_json=None, file_csv=None):
+    """
+
+    :param file_json:
+    :param file_csv:
+    :return:
+    """
     global input_data_json, input_data_csv
     if file_json is not None:
         with open(file_json, "rb") as target:
@@ -101,13 +126,17 @@ def create_net():
 
 
 def init():
-    # DB SERIES
-    orm.dbseries.client.last.drop_db()
-    orm.dbseries.client.last.create_db()
+    try:
+        # DB SERIES
+        # orm.dbseries.client.last.drop_db()
+        orm.dbseries.client.last.create_db()
+        # orm.dbseries.client.log.drop_db()
+        orm.dbseries.client.log.create_db()
+    except Exception as e:
+        print("Errore in DROP SERIES",e)
     # DB
-    prepare_dataset(file_csv=os.path.join(local_dir,"dataset.csv"))
+    prepare_dataset_by_folder(folder_csv=os.path.join(local_dir, "dataset/"))
     drop_database()
-
     create_net()
     collect_node = dict()
     for net in orm.db.Net.objects.raw(dict(avaiable=True)):
@@ -120,17 +149,20 @@ def init():
                     dict(_id=ObjectId(node_id)))
                 collect_node[net.name][subnet.name][node.pk.__str__()] \
                     = node.to_dict()
-                orm.dbseries.client.last.create(**format_message_position(
+                resp=orm.dbseries.client.last.create(**format_message_position(
                     id_name=node.cfg["name_dev"],
                     mac_address=node.macaddress,
-                    val_time=0,LAST=True))
-                orm.dbseries.client.log.create(**format_message_position(
+                    val_time=0, LAST=True))
+                print("LAST",resp,node.macaddress)
+                resp=orm.dbseries.client.log.create(**format_message_position(
                     id_name=node.cfg["name_dev"],
                     mac_address=node.macaddress,
                     ts_send=dt.utcnow().timestamp() * 1e6))
-    for k in collect_node:
-        print("K",k)
-        print(collect_node.get(k))
+                print("LOG",resp, node.macaddress)
+    # for k in collect_node:
+    #     print("K", k)
+    #     print(collect_node.get(k))
+
 
 if __name__ == "__main__":
     init()

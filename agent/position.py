@@ -89,7 +89,6 @@ def save_position(payload):
     :param payload:
     :return:
     """
-    print("P",payload)
     payload["data"]["fields"]["q"] = float(payload["data"]["fields"]["q"])
     orm.dbseries.client.log.create(**set_message_position(**payload[
         "data"]))
@@ -120,7 +119,7 @@ async def standalone(topic_root="/geo"):
                     repeat=False
                 if topic is not None and type(topic) is str:
                     topic = topic.strip()
-                    print("TOPIC", topic, time.time())
+                    # print("TOPIC", topic, time.time())
                     # if topic == topic_root:
                     #     pong(**json.loads(message))
                     if topic == topic_root + "/ping":

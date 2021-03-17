@@ -5,7 +5,7 @@ from datetime import datetime as dt
 
 import mqttools
 
-BROKER_PORT = 10008
+BROKER_PORT = 30000
 
 
 async def prepareFields(subs: str = "routine_preapare_fields",server="localhost",port=BROKER_PORT):

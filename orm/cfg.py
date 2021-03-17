@@ -2,15 +2,14 @@ DB_PARAM = {
     "db": {"driver": "mongo",
            "db_name": "test_secutor_home",
            "db_host": "localhost",
-           "db_port": "20127"
+           "db_port": "29127"
            },
     "dbseries": {
         "driver": "influxdb",
-        "host": '192.168.1.83',
-        "port": "8086",
-        "username": "root",
-        "password": "root",
-        "database": "test_secutor_home",
+        "host": 'localhost',
+        "port": "28127",
+        "token":"IJD9EtstUEQgUQgluW0I4LkwLpQLh0n5EP02zIerYS98_Q0EA4trRX_TBxDx1pt7heusiQ6TgDjX3EAaPMQXww==",
+        "database": "eseb",
         "db_tables":["last","log"]
     }
 }
