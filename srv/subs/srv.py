@@ -32,7 +32,7 @@ async def response(channel="/buffer", branch=None, test=False):
 
     while True:
         topic, byte_content = await client.messages.get()
-        print("TOPIC",topic,"\nCONTENT",byte_content)
+        # print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content)
         if byte_content is None:
             continue
         try:
@@ -42,23 +42,23 @@ async def response(channel="/buffer", branch=None, test=False):
             print(byte_content)
             print(e)
             continue
-        print(f'{dt.now()} Client: Got {content} on {topic}.')
+        # print(f'{dt.now()} Client: Got {content} on {topic}.')
         if test:
             continue
         # DESIGN per spegnere il client
         # if topic is None:th
         #     print('Echo client connection lost.')
         #     break
-        print("CHANNEL",channel)
+        # print("CHANNEL",channel)
         if channel.find("/net/refresh")!=-1 or channel.find("/net/update")!=-1:
             content["payload"] = db_ref.query(content["payload"])
-            print("CONTENT REFRESH UPDATE IS\n",content)
+            # print("\nCONTENT REFRESH UPDATE IS\n",content)
         elif channel.find("/collect/position")!=-1:
-            print("CONTENT COLLECT IS\n",content)
+            # print("\nCONTENT COLLECT IS\n",content)
             content["payload"] = db_ref.query(content["payload"])
         else:
             content["payload"] = dict(response=202)
-        #print("RESP IS",content)
+        print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content,"\nRESP IS",content)
         client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
         if branch is not None:

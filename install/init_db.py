@@ -128,9 +128,9 @@ def create_net():
 def init():
     try:
         # DB SERIES
-        # orm.dbseries.client.last.drop_db()
+        orm.dbseries.client.last.drop_db()
         orm.dbseries.client.last.create_db()
-        # orm.dbseries.client.log.drop_db()
+        orm.dbseries.client.log.drop_db()
         orm.dbseries.client.log.create_db()
     except Exception as e:
         print("Errore in DROP SERIES",e)
