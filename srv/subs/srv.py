@@ -46,10 +46,9 @@ async def response(channel="/buffer", branch=None, test=False):
         if test:
             continue
         # DESIGN per spegnere il client
-        # if topic is None:th
-        #     print('Echo client connection lost.')
-        #     break
-        # print("CHANNEL",channel)
+        if topic is None:
+            print('Echo client connection lost.')
+            break
         if channel.find("/net/refresh")!=-1 or channel.find("/net/update")!=-1:
             content["payload"] = db_ref.query(content["payload"])
             # print("\nCONTENT REFRESH UPDATE IS\n",content)
