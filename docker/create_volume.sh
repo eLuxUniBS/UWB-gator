@@ -28,6 +28,6 @@ for (( i = 0; i < n; i++ )); do
 done
 
 for (( i = 0; i < n; i++ )); do
-  docker volume rm ${vol_name[i]}
+  docker volume rm -f ${vol_name[i]}
   docker volume create --driver local --opt type=nfs --opt device=:${vol_path_folder[i]} ${vol_name[i]}
 done
