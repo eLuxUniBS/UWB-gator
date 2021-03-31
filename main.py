@@ -1,19 +1,16 @@
 import click
 import asyncio
-from orm import dbseries as orm
+import orm
 from srv.subs.srv import main as main_subs
 from srv.pubs.client import main as main_pubs
+
+
 # TODO
 # from server import launcher as main_server
 
 def launch_cli_server():
-    db_name = "test_secutor_home"
-    db_table = "last"
-    # token="IJD9EtstUEQgUQgluW0I4LkwLpQLh0n5EP02zIerYS98_Q0EA4trRX_TBxDx1pt7heusiQ6TgDjX3EAaPMQXww=="
-    # db_obj = orm.DB(token,db_name=db_name, db_table=db_table)
-    db_obj = orm.DB(db_name=db_name, db_table=db_table)
-    # db_obj.create_db()
-    asyncio.run(main_subs(db_obj))
+    asyncio.run(main_subs(orm_last=orm.dbseries.client.last,
+                          orm_log=orm.dbseries.client.log))
 
 
 def launch_cli_client():

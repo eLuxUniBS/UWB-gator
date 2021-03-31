@@ -9,11 +9,11 @@ if DB_PARAM.get("dbseries", dict()).get("driver", "") == "influxdb":
 
     for single_table in config["db_tables"]:
         params = dict(
-            db_name=config["database"],
-            db_table=single_table, host=config["host"], port=config["port"])
+            db_name=config["db_database"],
+            db_table=single_table, db_host=config["db_host"], db_port=config["db_port"])
         if config.get("token", None) is None:
-            params["username"] = config["username"]
-            params["password"] = config["password"]
+            params["db_username"] = config["db_username"]
+            params["db_password"] = config["db_password"]
         else:
-            params["token"] = config["token"]
+            params["db_token"] = config["db_token"]
         setattr(client, single_table, DB(**params))

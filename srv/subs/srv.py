@@ -11,8 +11,8 @@ import time
 import asyncio
 import mqttools
 
-
-db_ref = None
+db_ref_last = None
+db_ref_log = None
 BROKER_PORT = 30000
 
 
@@ -26,7 +26,7 @@ async def response(channel="/buffer", branch=None, test=False):
     """Wait for the client to publish to /ping, and publish /pong in
     response.
     """
-    global db_ref
+    global db_ref_last, db_ref_log
     client = await start_client()
     await client.subscribe(channel)
 
@@ -42,22 +42,30 @@ async def response(channel="/buffer", branch=None, test=False):
             print(byte_content)
             print(e)
             continue
-        # print(f'{dt.now()} Client: Got {content} on {topic}.')
         if test:
             continue
         # DESIGN per spegnere il client
         if topic is None:
             print('Echo client connection lost.')
             break
-        if channel.find("/net/refresh")!=-1 or channel.find("/net/update")!=-1:
-            content["payload"] = db_ref.query(content["payload"])
-            # print("\nCONTENT REFRESH UPDATE IS\n",content)
-        elif channel.find("/collect/position")!=-1:
+        if topic.find("/net/refresh") != -1:
+            print(content["payload"])
+            content["payload"] = db_ref_last.query(content["payload"])
+        elif topic.find("/net/update") != -1:
+            print("CONTENT IS ", content["payload"])
+            res_to_save = db_ref_last.query(content["payload"])
+            db_ref_log.query(content["payload"])
+            content["payload"] = res_to_save
+        elif topic.find("/collect/position") != -1:
             # print("\nCONTENT COLLECT IS\n",content)
-            content["payload"] = db_ref.query(content["payload"])
+            content["payload"] = db_ref_log.query(content["payload"])
         else:
             content["payload"] = dict(response=202)
-        print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content,"\nRESP IS",content)
+        if len(str(content)) > 100:
+            message = str(content)[:50] + "..." + str(content)[-50:]
+        else:
+            message = str(content)
+        print(dt.utcnow(), "TOPIC", topic, "\nCONTENT", byte_content, "\nRESP IS", message)
         client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
         if branch is not None:
@@ -71,9 +79,10 @@ async def broker_main():
     await broker.serve_forever()
 
 
-async def main(orm):
-    global db_ref
-    db_ref = orm
+async def main(orm_last, orm_log):
+    global db_ref_last, db_ref_log
+    db_ref_last = orm_last
+    db_ref_log = orm_log
     await asyncio.gather(
         response(channel="/net"),
         response(channel="/net/refresh"),

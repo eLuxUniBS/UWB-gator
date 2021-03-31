@@ -129,11 +129,14 @@ def init():
     try:
         # DB SERIES
         orm.dbseries.client.last.drop_db()
-        orm.dbseries.client.last.create_db()
         orm.dbseries.client.log.drop_db()
+    except Exception as e:
+        print("Errore in DROP DB SERIES", e)
+    try:
+        orm.dbseries.client.last.create_db()
         orm.dbseries.client.log.create_db()
     except Exception as e:
-        print("Errore in DROP SERIES",e)
+        print("Errore in CREATE DB SERIES",e)
     # DB
     prepare_dataset_by_folder(folder_csv=os.path.join(local_dir, "dataset/"))
     drop_database()

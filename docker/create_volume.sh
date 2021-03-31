@@ -9,16 +9,16 @@ FOLDER="$(eval pwd $FOLDER)/storage"
 
 echo $FOLDER
 
-vol_label=( "db_rel" "db_not_rel" "db_serial" )
+vol_label=( "DBRel" "DBNotRel" "DBSerial" )
 vol_path_folder=()
 vol_name=()
 
 for (( i = 0; i < ${#vol_label[@]}; i++ )); do
     echo $i
     vol_path_folder[${#vol_path_folder[*]}]="$FOLDER/${vol_label[i]}/data"
-    vol_name[${#vol_name[*]}]=${vol_label[i]}_data
+    vol_name[${#vol_name[*]}]="${vol_label[i]}Data"
     vol_path_folder[${#vol_path_folder[*]}]="$FOLDER/${vol_label[i]}/conf"
-    vol_name[${#vol_name[*]}]=${vol_label[i]}_conf
+    vol_name[${#vol_name[*]}]="${vol_label[i]}Conf"
 done
 
 # Prepared all base data, start to create dirs
@@ -28,6 +28,7 @@ for (( i = 0; i < n; i++ )); do
 done
 
 for (( i = 0; i < n; i++ )); do
+  echo "${vol_path_folder[i]} ${vol_name[i]}"
   docker volume rm -f ${vol_name[i]}
-  docker volume create --driver local --opt type=nfs --opt device=:${vol_path_folder[i]} ${vol_name[i]}
+  #docker volume create --driver local --opt type=nfs --opt device=:${vol_path_folder[i]} ${vol_name[i]}
 done

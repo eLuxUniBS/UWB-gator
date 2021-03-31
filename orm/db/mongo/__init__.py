@@ -7,12 +7,17 @@ if DB_PARAM.get("db", dict()).get("driver", "") == "mongo":
     if config.get("db_username",None) is not None and config.get("db_password",None) is not None:
             user_credentials="{user}:{password}@".format(user=config["db_username"],
              password=config["db_password"])
-    connect("mongodb://{user_credentials}{host}:{port}/{db}".format
-            (user_credentials=user_credentials,
-             host=config["db_host"],
-             port=config["db_port"],
-             db=config["db_name"])
-            )
+    try:
+        connect("mongodb://{user_credentials}{host}:{port}/{db}{append_option_query}".format
+                (user_credentials=user_credentials,
+                 host=config["db_host"],
+                 port=config["db_port"],
+                 db=config["db_name"],
+                append_option_query=config["option_query"])
+                )
+    except Exception as e:
+        print("Attenzione, errore in recupero connessione a DB")
+        print(e)
     from .net import *
     from .user import *
     from .fleet import *

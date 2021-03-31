@@ -2,18 +2,38 @@ DB_PARAM = {
     "db": {"driver": "mongo",
            "db_name": "test_secutor_home",
            "db_host": "localhost",
-           "db_port": "29127"
+           "db_port": "17017",
+           "db_username": "root",
+           "db_password": "root",
+           "option_query": "?authSource=admin"
            },
     "dbseries": {
         "driver": "influxdb",
-        "host": 'localhost',
-        "port": "8086",
-        "username": "root",
-        "password": "root",
-        "database": "test_secutor_home",
-        "db_tables":["last","log"]
+        "db_host": 'localhost',
+        "db_port": "18086",
+        "db_username": "root",
+        "db_password": "root",
+        "db_database": "test_secutor_home",
+        "db_tables": ["last", "log"]
     }
 }
+## Local DEV
+# DB_PARAM = {
+#     "db": {"driver": "mongo",
+#            "db_name": "test_secutor_home",
+#            "db_host": "localhost",
+#            "db_port": "29127"
+#            },
+#     "dbseries": {
+#         "driver": "influxdb",
+#         "host": 'localhost',
+#         "port": "8086",
+#         "username": "root",
+#         "password": "root",
+#         "database": "test_secutor_home",
+#         "db_tables":["last","log"]
+#     }
+# }
 # DB_PARAM = {
 #     "db": {"driver": "mongo",
 #            "db_name": "test_secutor_home",

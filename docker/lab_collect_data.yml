@@ -4,32 +4,32 @@ services:
   db_not_ser:
     image: mongo:latest
     ports:
-      - 27017:17017
+      - 17017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_ROOT_PASSWORD=root
     volumes:
-      - db_not_rel_conf:/etc/mongo
-      - db_not_rel_data:/var/lib/data
+      - ./storage/DBNotRel/conf:/etc/mongo
+      - ./storage/DBNotRel/data:/var/lib/data
 
   db_serial:
     image: influxdb:1.8
     ports:
-      - 8086:18086
+      - 18086:8086
     volumes:
-      - db_serial_conf:/etc/influxdb
-      - db_serial_data:/var/lib/influxdb
+      - ./storage/DBSerial/conf:/etc/influxdb
+      - ./storage/DBSerial/data:/var/lib/influxdb
 
-volumes:
-  db_not_rel_conf:
-    external: true
-  db_not_rel_data:
-    external: true
-  db_rel_conf:
-    external: true
-  db_rel_data:
-    external: true
-  db_serial_conf:
-    external: true
-  db_serial_data:
-    external: true
+#volumes:
+#  DBNotRelConf:
+#    external: true
+#  DBNotRelData:
+#    external: true
+#  DBRelConf:
+#    external: true
+#  DBRelData:
+#    external: true
+#  DBSerialConf:
+#    external: true
+#  DBSerialData:
+#    external: true

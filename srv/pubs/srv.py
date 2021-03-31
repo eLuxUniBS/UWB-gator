@@ -8,7 +8,7 @@ import mqttools
 BROKER_PORT = 30000
 
 
-async def prepareFields(subs: str = "routine_preapare_fields",server="localhost",port=BROKER_PORT):
+async def prepareFields(subs: str = "routine_preapare_fields", server="localhost", port=BROKER_PORT):
     async with mqttools.Client(server, port, connect_delays=[0.1]) as client:
         await client.subscribe("/" + subs)
         for data in [
@@ -29,14 +29,16 @@ async def prepareFields(subs: str = "routine_preapare_fields",server="localhost"
             client.publish('/net/update', json.dumps(message).encode('utf-8'))
 
 
-async def pubsMonitor(subs: str = "net/geo",server="localhost",port=BROKER_PORT,topic="/net/refresh"):
+async def pubsMonitor(subs: str = "net/geo", server="localhost", port=BROKER_PORT, topic="/net/refresh"):
     while True:
         async with mqttools.Client(server, port, connect_delays=[0.1]) as client:
-            await client.subscribe("/"+subs)
-            message = dict(header=subs, payload=dict(query="get", data=dict(
-                measurement="positions_register"
-            )))
-            response=client.publish(topic, json.dumps(message).encode('utf-8'))
-            print(dt.utcnow(),"write to {} --- this message".format(topic),message)
+            await client.subscribe("/" + subs)
+            message = dict(
+                header=subs,
+                payload=dict(
+                    query="get"
+                )
+            )
+            response = client.publish(topic, json.dumps(message).encode('utf-8'))
+            print(dt.utcnow(), "write to {} --- this message".format(topic), "\nMessage",message,"\nResponse",response)
             time.sleep(0.2)
-
