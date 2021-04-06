@@ -51,7 +51,7 @@ async def response(channel="/buffer", branch=None, test=False):
         if topic.find("/net/refresh") != -1:
             print(content["payload"])
             content["payload"] = db_ref_last.query(content["payload"])
-        elif topic.find("/net/update") != -1:
+        elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:
             print("CONTENT IS ", content["payload"])
             res_to_save = db_ref_last.query(content["payload"])
             db_ref_log.query(content["payload"])

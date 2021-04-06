@@ -13,15 +13,15 @@ async def prepareFields(subs: str = "routine_preapare_fields", server="localhost
         await client.subscribe("/" + subs)
         for data in [
             dict(
-                fields=dict(mac="EB:61:5E:75:4A:44", x=0.0, y=0.0, z=0.0, q=100.0),
+                fields=dict(mac="EB:61:5E:75:4A:44", x=1400.0, y=0.0, z=1300.0, q=100.0),
                 tags=dict(id="DW9424", ts=int(time.time()))
             ),
             dict(
-                fields=dict(mac="EE:C9:20:24:B6:3F", x=0.0, y=15000.0, z=0.0, q=100.0),
+                fields=dict(mac="EE:C9:20:24:B6:3F", x=1400.0, y=4400.0, z=900.0, q=100.0),
                 tags=dict(id="DWC327", ts=int(time.time()))
             ),
             dict(
-                fields=dict(mac="CF:62:E0:96:1F:45", x=15000.0, y=0.0, z=0.0, q=100.0),
+                fields=dict(mac="CF:62:E0:96:1F:45", x=2500.0, y=3750.0, z=1900.0, q=100.0),
                 tags=dict(id="DW5628", ts=int(time.time()))
             ),
         ]:
