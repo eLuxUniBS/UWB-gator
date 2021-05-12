@@ -1,6 +1,6 @@
 DB_PARAM = {
     "db": {"driver": "mongo",
-           "db_name": "test_secutor_home",
+           "db_name": "test_rilevamento_statico",
            "db_host": "localhost",
            "db_port": "17017",
            "db_username": "root",
@@ -13,7 +13,7 @@ DB_PARAM = {
         "db_port": "18086",
         "db_username": "root",
         "db_password": "root",
-        "db_database": "test_secutor_home",
+        "db_database": "test_rilevamento_statico",
         "db_tables": ["last", "log"]
     }
 }

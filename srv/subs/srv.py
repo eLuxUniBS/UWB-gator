@@ -56,6 +56,29 @@ async def response(channel="/buffer", branch=None, test=False):
             res_to_save = db_ref_last.query(content["payload"])
             db_ref_log.query(content["payload"])
             content["payload"] = res_to_save
+        elif topic.find("/net/archive") != -1:
+            for single_data in content["payload"].get("data", {}):
+                if single_data.get("data", None) is None:
+                    continue
+                temp = single_data.get("data", {})
+                if temp.get("payload", None) is None:
+                    print("ERROR!")
+                    continue
+                if temp["payload"].get("data",None) is None:
+                    prepare_data_to_save = dict(
+                        query=content["payload"].get("query", None),
+                        data=temp["payload"]
+                    )
+                else:
+                    prepare_data_to_save = dict(
+                        query=content["payload"].get("query", None),
+                        data=temp["payload"].get("data",{})
+                    )
+                db_ref_log.query(prepare_data_to_save)
+                prepare_data_to_save["data"]["tags"]["ts"]=0
+                prepare_data_to_save["data"]["time"]=0
+                res_to_save = db_ref_last.query(prepare_data_to_save)
+                # content["payload"] = res_to_save
         elif topic.find("/collect/position") != -1:
             # print("\nCONTENT COLLECT IS\n",content)
             content["payload"] = db_ref_log.query(content["payload"])
@@ -65,7 +88,7 @@ async def response(channel="/buffer", branch=None, test=False):
             message = str(content)[:50] + "..." + str(content)[-50:]
         else:
             message = str(content)
-        print(dt.utcnow(), "TOPIC", topic, "\nCONTENT", byte_content, "\nRESP IS", message)
+        # print(dt.utcnow(), "TOPIC", topic, "\nCONTENT", byte_content, "\nRESP IS", message)
         client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
         if branch is not None:
@@ -87,5 +110,6 @@ async def main(orm_last, orm_log):
         response(channel="/net"),
         response(channel="/net/refresh"),
         response(channel="/net/update"),
+        response(channel="/net/archive"),  # metering
         response(channel="/collect/position")
     )

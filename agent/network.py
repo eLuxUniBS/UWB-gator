@@ -51,7 +51,7 @@ def network_query(topic="", raw={}, header={}, payload={},
 
 
 async def standalone(topic_root="/net"):
-    client = mqttools.Client(client_id="Network",host="192.168.1.83",port=10008)
+    client = mqttools.Client(client_id="Network",host="127.0.0.1",port=10008)
 
     await client.start()
     await client.subscribe(topic=topic_root+'/#')

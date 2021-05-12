@@ -1,6 +1,6 @@
 from influxdb import InfluxDBClient
 from datetime import datetime as dt
-
+import json
 
 class DB:
     def __init__(self, db_name=None, db_table=None, db_host="localhost",
@@ -60,5 +60,6 @@ class DB:
             if content.get("query").find("get")==0:
                 return self.read(**content.get("data",dict()))
             elif content.get("query").find("save")==0:
+                print("THIS THE DATA\n",content.get("data",dict()))
                 return self.write(**content.get("data",dict()))
         return None

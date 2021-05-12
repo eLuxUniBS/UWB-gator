@@ -140,7 +140,7 @@ async def standalone(topic_root="/geo"):
         print("DISCONNESSO")
 
 async def set_client(client_id="Position"):
-    client = mqttools.Client(client_id=client_id+"_"+uuid.uuid4().__str__(), host="192.168.1.83", port=10008)
+    client = mqttools.Client(client_id=client_id+"_"+uuid.uuid4().__str__(), host="127.0.0.1", port=10008)
 
     await client.start()
     return client
