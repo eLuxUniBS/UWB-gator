@@ -32,7 +32,7 @@ async def response(channel="/buffer", branch=None, test=False):
 
     while True:
         topic, byte_content = await client.messages.get()
-        # print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content)
+        print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content)
         if byte_content is None:
             continue
         try:
