@@ -14,20 +14,27 @@ import mqttools
 db_ref_last = None
 db_ref_log = None
 BROKER_PORT = 30000
+BROKER_HOST = "10.42.0.72"
 
-
-async def start_client():
-    client = mqttools.Client('localhost', BROKER_PORT, connect_delays=[0.1])
+async def start_client(localhost:str=None,port:int=None):
+    if localhost is None:
+        localhost=BROKER_HOST
+    if port is None:
+        port=BROKER_PORT
+    print("START WITH",localhost,port)
+    client = mqttools.Client(localhost, port, connect_delays=[0.1])
+    print("CLient")
     await client.start()
+    print("Client awaited")
     return client
 
 
-async def response(channel="/buffer", branch=None, test=False):
+async def response(channel="/buffer", branch=None, test=False,localhost=None,port=None):
     """Wait for the client to publish to /ping, and publish /pong in
     response.
     """
     global db_ref_last, db_ref_log
-    client = await start_client()
+    client = await start_client(localhost=localhost,port=port)
     await client.subscribe(channel)
 
     while True:
@@ -98,18 +105,18 @@ async def response(channel="/buffer", branch=None, test=False):
 async def broker_main():
     """The broker, serving both clients, forever.
     """
-    broker = mqttools.Broker(('0.0.0.0', BROKER_PORT))
+    broker = mqttools.Broker((BROKER_HOST, BROKER_PORT))
     await broker.serve_forever()
 
 
-async def main(orm_last, orm_log):
+async def main(orm_last, orm_log,localhost=None,port=None):
     global db_ref_last, db_ref_log
     db_ref_last = orm_last
     db_ref_log = orm_log
     await asyncio.gather(
-        response(channel="/net"),
-        response(channel="/net/refresh"),
-        response(channel="/net/update"),
-        response(channel="/net/archive"),  # metering
-        response(channel="/collect/position")
+        response(channel="/net",localhost=localhost,port=port),
+        response(channel="/net/refresh",localhost=localhost,port=port),
+        response(channel="/net/update",localhost=localhost,port=port),
+        response(channel="/net/archive",localhost=localhost,port=port), # Metering
+        response(channel="/collect/position",localhost=localhost,port=port),
     )

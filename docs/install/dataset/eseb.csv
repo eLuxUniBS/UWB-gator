@@ -1,0 +1,19 @@
+#id,nodeRole,nodeType,nodeSymbol,idPhy,nodeName,net,cell,nameHW,macAddr,typeDev
+n10,tokenveicolostrumento,tag,veicolo,n10,Scavatore Pala,eseb,v2,DW4836,D6:CC:4C:D7:7C:AF,decawave
+n11,tokendefault,ancora,area,n11,Ancora di riferimento,eseb,north,DW1024,C0:60:21:73:40:CC,decawave
+n12,tokenveicolocentrale,tag,veicolo,n12,Scavatore Centrale,eseb,v2,DW0B09,D3:A8:C9:E3:9A:5A,decawave
+n13,tokenpersonastrumento,tag,area,n13,Utente SX,eseb,iperhuman1,DW810E,C3:A4:6B:C0:3C:D2,decawave
+n14,tokenveicolocentrale,tag,veicolo,n14,Pala Frontale,eseb,v1,DW9717,E9:EA:2D:54:AF:26,decawave
+n15,tokenpersonastrumento,tag,area,n15,Utente Retro,eseb,iperhuman1,DWC01F,C1:C9:38:AC:4C:D7,decawave
+n16,tokendefault,ancora,area,n16,Ancora A,eseb,north,DW9781,EC:85:34:DD:19:5E,decawave
+n17,tokendefault,iniziatore,area,n17,Ancora ZERO,eseb,north,DW9424,EB:61:5E:75:4A:44,decawave
+n18,tokendefault,ancora,area,n18,Ancora SX,eseb,north,DWC327,EE:C9:20:24:B6:3F,decawave
+n19,tokendefault,ancora,area,n19,Ancora DX,eseb,north,DW5628,CF:62:E0:96:1F:45,decawave
+n20,tokenpersonalecentrale,tag,operatore,n20,Token Utente,eseb,north,DW0AB5,D5:4E:F4:0C:F6:26,decawave
+n21,tokenpersonastrumento,tag,operatore,n21,Utente DX,eseb,iperhuman1,DW181F,DF:EC:47:91:BF:31,decawave
+n22,tokenpersonacentrale,tag,operatore,n22,Token IperUtente,eseb,iperhuman1,SB001A,AA:AA:AA:00:AA:1A,eseb
+n23,tokenveicolocentrale,tag,veicolo,n23,Corpo escavatore,eseb,iperv2,SBEC1C,AA:AA:EC:CE:NT:1C,decawave
+n24,tokenveicolostrumento,tag,veicolo,n24,Iper pala,eseb,iperv2,SBEC1A,AA:AA:EC:EC:00:1A,eseb
+n25,tokenveicolostrumento,tag,veicolo,n25,Pala DX,eseb,iperv2,SBET2P,AA:AA:EC:AA:AA:00,decawave
+n26,tokenveicolostrumento,tag,veicolo,n26,Pala Centro,eseb,iperv2,SBET3P,AA:AA:EC:AA:AA:A9,decawave
+n27,tokenveicolostrumento,tag,veicolo,n27,Pala SX,eseb,iperv2,SBET4P,AA:AA:EC:AA:AA:FF,decawave

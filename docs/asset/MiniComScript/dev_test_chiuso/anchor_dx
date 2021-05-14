@@ -1,0 +1,9 @@
+send ""
+
+send aps 2500 3750 1900
+expect "aps: ok"
+
+send apg
+expect "apg: x:2500 y:3750 z:1900 qf:100"
+
+exit

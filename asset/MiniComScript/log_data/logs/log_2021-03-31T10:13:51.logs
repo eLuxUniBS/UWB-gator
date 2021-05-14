@@ -1,11 +1,0 @@
-[!p[?3;4l[4l>[0m(B[?1h=[H[2J[0m(B[7m[37;1H[K[?12l[?25h[?25l                                                                                                                                                                                                                  [?12l[?25h[?12l[?25h[?25lCTRL-A Z for help | 115200 8N1 | NOR | Minicom 2.7.90 | VT102 | Offline | usb-SEGGER_J-Link_000760096961-if00                                                                                                     [37;160H[?12l[?25h[1;1H
-[0m(BWelcome to minicom 2.7.90
-
-OPTIONS: I18n 
-Compiled on Jul 26 2020, 10:44:57.
-Port /dev/serial/by-id/usb-SEGGER_J-Link_000760096961-if00, 10:13:41
-
-Press CTRL-A Z for help on special keys
-
-[37;40H[0m(B[7mscript ./monit[10;1H[37;40HMinicom 2.7.90[10;1H[0m(Bles
-dwm> [8;95H[?25l+----------------------+[9;95H|    Leave Minicom?    |[10;95H|               No     |[11;95H+----------------------+[10;116H[?25l[10;98H[0m(B[7m   Yes  [?12l[?25h[8;1H[0m(BPress CTRL-A Z for help on special keys                                                                               [9;1H                                                                                                                      [10;1Hles                                                                                                                   [11;1Hdwm>                                                                                                                  [11;6H[?12l[?25h[?12l[?25h[H[2J[?12l[?25h[?1l>[!p[?3;4l[4l>

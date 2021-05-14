@@ -1,3 +1,4 @@
+import os
 DB_PARAM = {
     "db": {"driver": "mongo",
            "db_name": "test_rilevamento_statico",
@@ -17,35 +18,23 @@ DB_PARAM = {
         "db_tables": ["last", "log"]
     }
 }
-## Local DEV
-# DB_PARAM = {
-#     "db": {"driver": "mongo",
-#            "db_name": "test_secutor_home",
-#            "db_host": "localhost",
-#            "db_port": "29127"
-#            },
-#     "dbseries": {
-#         "driver": "influxdb",
-#         "host": 'localhost',
-#         "port": "8086",
-#         "username": "root",
-#         "password": "root",
-#         "database": "test_secutor_home",
-#         "db_tables":["last","log"]
-#     }
-# }
-# DB_PARAM = {
-#     "db": {"driver": "mongo",
-#            "db_name": "test_secutor_home",
-#            "db_host": "localhost",
-#            "db_port": ""
-#            },
-#     "dbseries": {
-#         "driver": "influxdb",
-#         "host": 'localhost',
-#         "port": "28127",
-#         "token":"IJD9EtstUEQgUQgluW0I4LkwLpQLh0n5EP02zIerYS98_Q0EA4trRX_TBxDx1pt7heusiQ6TgDjX3EAaPMQXww==",
-#         "database": "eseb",
-#         "db_tables":["last","log"]
-#     }
-# }
+if os.environ.get("DOCKER_ENV",None) is not None:
+    DB_PARAM = {
+        "db": {"driver": "mongo",
+               "db_name": "test_rilevamento_statico",
+               "db_host": "db_not_ser",
+               "db_port": "27017",
+               "db_username": "root",
+               "db_password": "root",
+               "option_query": "?authSource=admin"
+               },
+        "dbseries": {
+            "driver": "influxdb",
+            "db_host": 'db_ser',
+            "db_port": "8086",
+            "db_username": "root",
+            "db_password": "root",
+            "db_database": "test_rilevamento_statico",
+            "db_tables": ["last", "log"]
+        }
+    }
