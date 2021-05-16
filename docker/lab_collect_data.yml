@@ -1,26 +1,26 @@
 version: "3.9"
 
 services:
-#  db_not_ser:
-#    container_name: db_not_ser
-#    image: mongo:latest
-#    ports:
-#      - 17017:27017
-#    environment:
-#      - MONGO_INITDB_ROOT_USERNAME=root
-#      - MONGO_INITDB_ROOT_PASSWORD=root
-#    volumes:
-#      - ./storage/DBNotRel/conf:/etc/mongo
-#      - ./storage/DBNotRel/data:/var/lib/data
-#
-#  db_serial:
-#    image: influxdb:1.8
-#    container_name: db_ser
-#    ports:
-#      - 18086:8086
-#    volumes:
-#      - ./storage/DBSerial/conf:/etc/influxdb
-#      - ./storage/DBSerial/data:/var/lib/influxdb
+  db_not_ser:
+    container_name: db_not_ser
+    image: mongo:latest
+    ports:
+      - 17017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    volumes:
+      - ./storage/DBNotRel/conf:/etc/mongo
+      - ./storage/DBNotRel/data:/var/lib/data
+
+  db_serial:
+    image: influxdb:1.8
+    container_name: db_ser
+    ports:
+      - 18086:8086
+    volumes:
+      - ./storage/DBSerial/conf:/etc/influxdb
+      - ./storage/DBSerial/data:/var/lib/influxdb
 
   agent_save_data:
     container_name: srv_save
@@ -28,7 +28,7 @@ services:
       context: ../
       dockerfile: docker/docker_image/agent.dockerfile
       args:
-        - PORT=30000
+        - PORT=1883
         - HOST=mqtt_broker
     depends_on:
       - mqtt_broker
