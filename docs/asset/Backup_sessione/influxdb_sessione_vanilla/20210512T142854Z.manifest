@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "fileName": "20210512T142854Z.meta",
+    "size": 251
+  },
+  "limited": false,
+  "files": [
+    {
+      "database": "test_rilevamento_statico",
+      "policy": "autogen",
+      "shardID": 2,
+      "fileName": "20210512T142854Z.s2.tar.gz",
+      "size": 14336,
+      "lastModified": 0
+    },
+    {
+      "database": "test_rilevamento_statico",
+      "policy": "autogen",
+      "shardID": 3,
+      "fileName": "20210512T142854Z.s3.tar.gz",
+      "size": 15872,
+      "lastModified": 0
+    },
+    {
+      "database": "test_rilevamento_statico",
+      "policy": "autogen",
+      "shardID": 4,
+      "fileName": "20210512T142854Z.s4.tar.gz",
+      "size": 26327040,
+      "lastModified": 0
+    }
+  ]
+}
