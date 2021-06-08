@@ -59,7 +59,6 @@ class DB:
         if content.get("query",None) is not None:
             if content.get("query").find("get")==0:
                 return self.read(**content.get("data",dict()))
-            elif content.get("query").find("save")==0:
-                print("THIS THE DATA\n",content.get("data",dict()))
+            elif content.get("query").find("save")==0:                
                 return self.write(**content.get("data",dict()))
         return None

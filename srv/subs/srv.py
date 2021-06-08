@@ -14,18 +14,15 @@ import mqttools
 db_ref_last = None
 db_ref_log = None
 BROKER_PORT = 30000
-BROKER_HOST = "10.42.0.72"
+BROKER_HOST = "10.211.55.28"
 
 async def start_client(localhost:str=None,port:int=None):
     if localhost is None:
         localhost=BROKER_HOST
     if port is None:
         port=BROKER_PORT
-    print("START WITH",localhost,port)
-    client = mqttools.Client(localhost, port, connect_delays=[0.1])
-    print("CLient")
+    client = mqttools.Client(localhost, port, connect_delays=[0.1])    
     await client.start()
-    print("Client awaited")
     return client
 
 
@@ -34,12 +31,12 @@ async def response(channel="/buffer", branch=None, test=False,localhost=None,por
     response.
     """
     global db_ref_last, db_ref_log
+    print(channel,"START")
     client = await start_client(localhost=localhost,port=port)
     await client.subscribe(channel)
-
+    print(channel,"START")
     while True:
         topic, byte_content = await client.messages.get()
-        print(dt.utcnow(),"TOPIC",topic,"\nCONTENT",byte_content)
         if byte_content is None:
             continue
         try:
@@ -54,52 +51,59 @@ async def response(channel="/buffer", branch=None, test=False,localhost=None,por
         # DESIGN per spegnere il client
         if topic is None:
             print('Echo client connection lost.')
-            break
-        if topic.find("/net/refresh") != -1:
-            print(content["payload"])
-            content["payload"] = db_ref_last.query(content["payload"])
-        elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:
-            print("CONTENT IS ", content["payload"])
-            res_to_save = db_ref_last.query(content["payload"])
-            db_ref_log.query(content["payload"])
-            content["payload"] = res_to_save
-        elif topic.find("/net/archive") != -1:
-            for single_data in content["payload"].get("data", {}):
-                if single_data.get("data", None) is None:
-                    continue
-                temp = single_data.get("data", {})
-                if temp.get("payload", None) is None:
-                    print("ERROR!")
-                    continue
-                if temp["payload"].get("data",None) is None:
-                    prepare_data_to_save = dict(
-                        query=content["payload"].get("query", None),
-                        data=temp["payload"]
-                    )
-                else:
-                    prepare_data_to_save = dict(
-                        query=content["payload"].get("query", None),
-                        data=temp["payload"].get("data",{})
-                    )
-                db_ref_log.query(prepare_data_to_save)
-                prepare_data_to_save["data"]["tags"]["ts"]=0
-                prepare_data_to_save["data"]["time"]=0
-                res_to_save = db_ref_last.query(prepare_data_to_save)
-                # content["payload"] = res_to_save
-        elif topic.find("/collect/position") != -1:
-            # print("\nCONTENT COLLECT IS\n",content)
-            content["payload"] = db_ref_log.query(content["payload"])
-        else:
-            content["payload"] = dict(response=202)
-        if len(str(content)) > 100:
-            message = str(content)[:50] + "..." + str(content)[-50:]
-        else:
-            message = str(content)
-        # print(dt.utcnow(), "TOPIC", topic, "\nCONTENT", byte_content, "\nRESP IS", message)
-        client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
+            continue        
+        try:
+            if topic.find("/net/refresh") != -1:
+                print(content["payload"])
+                content["payload"] = db_ref_last.query(content["payload"])
+            elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:
+                print("CONTENT IS ", content["payload"])
+                res_to_save = db_ref_last.query(content["payload"])
+                db_ref_log.query(content["payload"])
+                content["payload"] = res_to_save
+            elif topic.find("/net/archive") != -1:
+                dataset=content["payload"].get("data", {})
+                if type(dataset) is str:
+                    dataset=json.loads(dataset)
+                    dataset=dataset.get("data_sendit",{})
+                for single_data in [json.loads(x) for x in dataset]:
+                    if single_data.get("obj", None) is None:
+                        continue
+                    temp=json.loads(single_data.get("obj"))
+                    if temp.get("payload", None) is None:
+                        print("ERROR!")
+                        continue
+                    if temp["payload"].get("data",None) is None:
+                        prepare_data_to_save = dict(
+                            query=content["payload"].get("query", None),
+                            data=temp["payload"]
+                        )
+                    else:
+                        prepare_data_to_save = dict(
+                            query=content["payload"].get("query", None),
+                            data=temp["payload"].get("data",{})
+                        )
+                    db_ref_log.query(prepare_data_to_save)
+                    prepare_data_to_save["data"]["tags"]["ts"]=0
+                    prepare_data_to_save["data"]["time"]=0
+                    res_to_save = db_ref_last.query(prepare_data_to_save)
+                    # content["payload"] = res_to_save
+            elif topic.find("/collect/position") != -1:
+                # print("\nCONTENT COLLECT IS\n",content)
+                content["payload"] = db_ref_log.query(content["payload"])
+            else:
+                content["payload"] = dict(response=202)
+            if len(str(content)) > 100:
+                message = str(content)[:50] + "..." + str(content)[-50:]
+            else:
+                message = str(content)
+            # print(dt.utcnow(), "TOPIC", topic, "\nCONTENT", byte_content, "\nRESP IS", message)
+            client.publish("/" + content["header"], json.dumps(content).encode('utf-8'))
 
-        if branch is not None:
-            client.publish(branch, json.dumps(content).encode('utf-8'))
+            if branch is not None:
+                client.publish(branch, json.dumps(content).encode('utf-8'))
+        except Exception as e:
+            print("Errore ",e)
 
 
 async def broker_main():

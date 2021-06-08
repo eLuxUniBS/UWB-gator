@@ -9,8 +9,8 @@ def launch_cli_server(localhost:str=None,port:int=None):
                           orm_log=orm.dbseries.client.log,localhost=localhost,port=port))
 
 
-def launch_cli_client():
-    asyncio.run(main_pubs())
+def launch_cli_client(*args,**kwargs):
+    asyncio.run(main_pubs(*args,**kwargs))
 
 
 @click.command()
@@ -29,7 +29,7 @@ def launch(mode,host,port):
         print("Errore nei parametri di ingresso",e)
         exit()
     if mode == "cli_client":
-        launch_cli_client()
+        launch_cli_client(localhost=host,port=int(port))
     else:
         launch_cli_server(localhost=host,port=int(port))
 
