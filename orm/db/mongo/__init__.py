@@ -22,3 +22,4 @@ if DB_PARAM.get("db", dict()).get("driver", "") == "mongo":
     from .user import *
     from .fleet import *
     from .permission import *
+    from .signal import *

@@ -1,14 +1,34 @@
 import asyncio
 
-from .srv import prepareFields, pubsMonitor
+from .srv import mobile_app, vehicle
 
 
 BROKER_PORT = 30000
-async def main(localhost="10.42.0.72",port=BROKER_PORT):
-    await asyncio.gather(
-        prepareFields(server=localhost, port=port),
-        pubsMonitor(server=localhost, port=port)
-    )
+
+
+async def main(localhost="10.42.0.72", port=BROKER_PORT, kind_app="mobile_app"):
+    if kind_app == "mobile_app":
+        await asyncio.gather(
+            mobile_app.prepareFields(server=localhost, port=port),
+            mobile_app.pubsMonitor(server=localhost, port=port)
+        )
+    elif kind_app == "vehicle":
+        paths = [
+            ("idA","/dev/serial/by-id/usb-SEGGER_J-Link_000760029246-if00"),
+            ("idB","/dev/serial/by-id/usb-SEGGER_J-Link_000760029217-if00")
+        ]
+        await asyncio.gather(
+            *[vehicle.pubMeasurementFromSerial(
+                server=localhost,
+                port=port,
+                serial_path=path,
+                id_send=id,
+                baudrate=115200,
+                timeout=0.5
+            ) for (id,path) in paths]
+        )
+    else:
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
