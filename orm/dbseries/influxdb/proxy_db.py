@@ -50,7 +50,7 @@ class DB:
             measurement = self.measurement_name
         return self.create(measurement=measurement, **kwargs)
 
-    def query(self, *args, **kwargs):
+    def query(self,content:dict, *args, **kwargs):
         """
         Formato messaggio: in kwargs viene passato il payload
         {
@@ -64,11 +64,6 @@ class DB:
             }
         }
         """
-        if len(args) == 1:
-            content = args[0]
-        else:
-            print(args)
-            return dict(response=500)
         if content.get("query", None) is not None:
             if content.get("query").find("get") == 0:
                 return self.read(**content.get("data", dict()))

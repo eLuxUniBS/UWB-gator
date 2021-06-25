@@ -11,8 +11,8 @@ def launch_cli_server(localhost:str=None,port:int=None,kind_app:str=None):
                           localhost=localhost,port=port,kind_app=kind_app))
 
 
-def launch_cli_client(*args,**kwargs):
-    asyncio.run(main_pubs(*args,**kwargs))
+def launch_cli_client(*args,kind_app:str=None,**kwargs):
+    asyncio.run(main_pubs(*args,kind_app=kind_app,**kwargs))
 
 
 @click.command()
@@ -36,6 +36,10 @@ def launch(mode,host,port):
         launch_cli_client(localhost=host,port=int(port),kind_app="mobile_app")
     elif mode == "cli_client_serial":
         launch_cli_client(localhost=host,port=int(port),kind_app="vehicle")
+    elif mode == "cli_client_test_net":
+        launch_cli_client(localhost=host,port=int(port),kind_app="test_net")
+    elif mode == "cli_client_monitor":
+        launch_cli_client(localhost=host,port=int(port),kind_app="monitor")
     elif mode == "cli_server_monitor":
         launch_cli_server(localhost=host,port=int(port),kind_app="monitor")
     else:

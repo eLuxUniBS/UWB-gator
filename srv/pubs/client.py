@@ -28,8 +28,19 @@ async def main(localhost="10.42.0.72", port=BROKER_PORT, kind_app="mobile_app"):
                 timeout=0.5
             ) for (id,path) in paths]
         )
-    elif kind_app=="monitor":
-        pass
+    elif kind_app=="monitor":        
+        await asyncio.gather(
+            mobile_app.ping(server=localhost, port=port)
+        )
+    elif kind_app=="test_net":      
+        await asyncio.gather(
+            mobile_app.test_net(server=localhost, port=port,nodes=[
+                dict(mac="c6:d6:37:d1:08:42",id="DWD537",x=0,y=0,z=0,q=100),
+                dict(mac="e3:3a:13:b2:5f:56",id="DW8615",x=-1,y=-1,z=-1,q=100),
+                # dict(mac="",id="",x=0,y=0,z=0,q=100),
+                # dict(mac="",id="",x=0,y=0,z=0,q=100)
+                ])
+        )
     else:
         pass
 

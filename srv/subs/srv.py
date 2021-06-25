@@ -33,7 +33,7 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
     response.
     """
     global db_ref_last, db_ref_log,db_ref_gen
-    logger.debug(f'channel', channel)
+    logger.debug(f'channel')
     client = await start_client(localhost=localhost, port=port)
     await client.subscribe(channel)
     while True:
@@ -49,14 +49,12 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
             continue
         if test:
             continue
-        # DESIGN per spegnere il client
         if topic is None:
-            print('Echo client connection lost.')
+            logger.warning('Echo client connection lost.')
             continue
         try:
-            # print("TOPIC",topic)
             if topic.find("/net/refresh") != -1:
-                print(content["payload"])
+                logger.debug(f'content["payload"]')
                 content["payload"] = db_ref_last.query(content["payload"])
             elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:
                 #print("CONTENT IS ", content["payload"])
@@ -100,12 +98,17 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
                     print("Impossibile salvare")
                 continue
             else:
+
+                print("TOPIC",topic)
                 content["payload"] = dict(response=202)
+                print("TOPIC",topic)
             if len(str(content)) > 100:
                 message = str(content)[:50] + "..." + str(content)[-50:]
             else:
                 message = str(content)
-            print(dt.utcnow(), "TOPIC", topic, "\nCONTENT",byte_content, "\nRESP IS", message)
+
+            print("TOPIC",topic)
+            logger.debug("{ts}@{topic}\n\t\t{res}\n\t\t{req}".format(ts=dt.utcnow(),topic=topic,req=byte_content, res=message))
             if branch is not None:
                 client.publish(branch, json.dumps(content).encode('utf-8'))
             elif type(content.get("header",None)) is str:
