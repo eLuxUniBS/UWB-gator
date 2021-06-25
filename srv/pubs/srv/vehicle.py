@@ -60,6 +60,7 @@ async def pubMeasurementFromSerial(subs: str = "net/geo",
                                     timeout: int = 1):
     if id_send is None:
         id_send=serial_path.split("/")[-1]
+    print("ID",id_send,"PATH",serial_path)
     while True:        
         cli = Serial(serial_path, baudrate=baudrate, timeout=timeout)
         async with mqttools.Client(server, port, connect_delays=[0.1]) as client:

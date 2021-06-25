@@ -26,10 +26,23 @@ services:
     container_name: srv_save
     build:
       context: ../
+      dockerfile: docker/docker_image/agent_save.dockerfile
+      args:
+        - PORT=1883
+        - HOST=mqtt_broker
+    depends_on:
+      - mqtt_broker
+
+    
+  agent_broadcast:
+    container_name: srv_broadcast
+    build:
+      context: ../
       dockerfile: docker/docker_image/agent.dockerfile
       args:
         - PORT=1883
         - HOST=mqtt_broker
+      commands: python3 main.py --mode cli_server --port $PORT --host $HOST
     depends_on:
       - mqtt_broker
 

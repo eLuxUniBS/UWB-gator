@@ -15,7 +15,8 @@ async def main(localhost="10.42.0.72", port=BROKER_PORT, kind_app="mobile_app"):
     elif kind_app == "vehicle":
         paths = [
             ("idA","/dev/serial/by-id/usb-SEGGER_J-Link_000760029246-if00"),
-            ("idB","/dev/serial/by-id/usb-SEGGER_J-Link_000760029217-if00")
+            ("idB","/dev/serial/by-id/usb-SEGGER_J-Link_000760029217-if00"),
+#            ("idC","/dev/serial/by-id/usb-SEGGER_J-Link_000760029214-if00")
         ]
         await asyncio.gather(
             *[vehicle.pubMeasurementFromSerial(
@@ -27,6 +28,8 @@ async def main(localhost="10.42.0.72", port=BROKER_PORT, kind_app="mobile_app"):
                 timeout=0.5
             ) for (id,path) in paths]
         )
+    elif kind_app=="monitor":
+        pass
     else:
         pass
 

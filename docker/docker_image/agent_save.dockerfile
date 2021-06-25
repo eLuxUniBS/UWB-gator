@@ -15,4 +15,4 @@ ENV DOCKER_ENV=1
 ENV PORT=$PORT
 ENV HOST=$HOST
 #RUN python3 /srv/main.py --help
-# ENTRYPOINT ["bash","launch_srv_save.sh"]
+ENTRYPOINT ["bash","launch_srv_save.sh"]

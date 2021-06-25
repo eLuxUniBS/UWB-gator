@@ -6,10 +6,10 @@
  +--------+            +--------+            +-------------+
 """
 from datetime import datetime as dt
-import json
-import time
-import asyncio
-import mqttools
+import json,time,asyncio,mqttools,logging
+logging.basicConfig()
+logger=logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 db_ref_last = None
 db_ref_log = None
@@ -33,10 +33,9 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
     response.
     """
     global db_ref_last, db_ref_log,db_ref_gen
-    print(channel, "START")
+    logger.debug(f'channel', channel)
     client = await start_client(localhost=localhost, port=port)
     await client.subscribe(channel)
-    print(channel, "START")
     while True:
         topic, byte_content = await client.messages.get()
         if byte_content is None:
@@ -44,7 +43,7 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
         try:
             content = json.loads(byte_content.decode('utf-8'))
         except Exception as e:
-            print("Errore in codifica messaggio")
+            logger.debug(f'e', e)
             print(byte_content)
             print(e)
             continue
@@ -106,16 +105,15 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
                 message = str(content)[:50] + "..." + str(content)[-50:]
             else:
                 message = str(content)
-            print(dt.utcnow(), "TOPIC", topic, "\nCONTENT",
-                  byte_content, "\nRESP IS", message)
-            if type(content["header"]) is str:
-                client.publish("/" + content["header"],
-                            json.dumps(content).encode('utf-8'))
-            elif content["header"].get("next_hop",None) is not None:
-                client.publish("/" + content["header"]["next_hop"],
-                            json.dumps(content).encode('utf-8'))
+            print(dt.utcnow(), "TOPIC", topic, "\nCONTENT",byte_content, "\nRESP IS", message)
             if branch is not None:
                 client.publish(branch, json.dumps(content).encode('utf-8'))
+            elif type(content.get("header",None)) is str:
+                client.publish("/" + content["header"],
+                            json.dumps(content).encode('utf-8'))
+            elif content.get("header").get("next_hop",None) is not None:
+                client.publish("/" + content["header"]["next_hop"],
+                            json.dumps(content).encode('utf-8'))            
         except Exception as e:
             print("Errore ", e)
 
@@ -127,18 +125,23 @@ async def broker_main():
     await broker.serve_forever()
 
 
-async def main(orm_last, orm_log, localhost=None, port=None, orm_gen=None):
+async def main(orm_last, orm_log, localhost=None, port=None, orm_gen=None,kind_app:str=None):
     global db_ref_last, db_ref_log, db_ref_gen
     db_ref_last = orm_last
     db_ref_log = orm_log
     if orm_gen is not None:
         db_ref_gen = orm_gen
-    await asyncio.gather(
-        response(channel="/net", localhost=localhost, port=port),
-        response(channel="/net/refresh", localhost=localhost, port=port),
-        response(channel="/net/update", localhost=localhost, port=port),
-        response(channel="/net/archive",
-                 localhost=localhost, port=port),  # Metering
-        response(channel="/collect/position", localhost=localhost, port=port),
-        response(channel="/p2p/data", localhost=localhost, port=port),
+    if kind_app=="monitor":
+        await asyncio.gather(
+        response(channel="/net/refresh",branch="/net", localhost=localhost, port=port),
     )
+    else:
+        await asyncio.gather(
+            response(channel="/net", localhost=localhost, port=port),
+            response(channel="/net/refresh", localhost=localhost, port=port),
+            response(channel="/net/update", localhost=localhost, port=port),
+            response(channel="/net/archive",
+                    localhost=localhost, port=port),  # Metering
+            response(channel="/collect/position", localhost=localhost, port=port),
+            response(channel="/p2p/data", localhost=localhost, port=port),
+        )

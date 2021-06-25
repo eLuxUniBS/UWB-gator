@@ -4,11 +4,11 @@ import orm
 from srv.subs.srv import main as main_subs
 from srv.pubs.client import main as main_pubs
 
-def launch_cli_server(localhost:str=None,port:int=None):
+def launch_cli_server(localhost:str=None,port:int=None,kind_app:str=None):
     asyncio.run(main_subs(orm_last=orm.dbseries.client.last,
                           orm_log=orm.dbseries.client.log,
                           orm_gen=orm.db,
-                          localhost=localhost,port=port))
+                          localhost=localhost,port=port,kind_app=kind_app))
 
 
 def launch_cli_client(*args,**kwargs):
@@ -19,6 +19,7 @@ def launch_cli_client(*args,**kwargs):
 @click.option("--mode", default="cli_server", help="""Usa una delle seguenti modalità:
 \nserver\tlancio servizio (default)
 \ncli_server\tserver da linea di comando
+\ncli_server_monitor\tserver da linea di comando
 \ncli_client\tclient da linea di comando
 \ncli_client_serial\tclient da linea di comando per la porta seriale""")
 @click.option("--host", default="localhost", help="MQTT Broker host")
@@ -35,6 +36,8 @@ def launch(mode,host,port):
         launch_cli_client(localhost=host,port=int(port),kind_app="mobile_app")
     elif mode == "cli_client_serial":
         launch_cli_client(localhost=host,port=int(port),kind_app="vehicle")
+    elif mode == "cli_server_monitor":
+        launch_cli_server(localhost=host,port=int(port),kind_app="monitor")
     else:
         launch_cli_server(localhost=host,port=int(port))
 
