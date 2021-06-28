@@ -1,4 +1,4 @@
-import click
+import argparse
 import asyncio
 import orm
 from srv.subs.srv import main as main_subs
@@ -15,16 +15,9 @@ def launch_cli_client(*args,kind_app:str=None,**kwargs):
     asyncio.run(main_pubs(*args,kind_app=kind_app,**kwargs))
 
 
-@click.command()
-@click.option("--mode", default="cli_server", help="""Usa una delle seguenti modalità:
-\nserver\tlancio servizio (default)
-\ncli_server\tserver da linea di comando
-\ncli_server_monitor\tserver da linea di comando
-\ncli_client\tclient da linea di comando
-\ncli_client_serial\tclient da linea di comando per la porta seriale""")
-@click.option("--host", default="localhost", help="MQTT Broker host")
-@click.option("--port", default="1883", help="MQTT Broker port")
-def launch(mode,host,port):
+# @click.option("--host", default="localhost", help="MQTT Broker host")
+# @click.option("--port", default="1883", help="MQTT Broker port")
+def launch(mode,host,port,*args,**kwargs):
     try:
         mode = mode.lower().strip()
         host=host.strip()
@@ -40,11 +33,23 @@ def launch(mode,host,port):
         launch_cli_client(localhost=host,port=int(port),kind_app="test_net")
     elif mode == "cli_client_monitor":
         launch_cli_client(localhost=host,port=int(port),kind_app="monitor")
+    elif mode =="cli_server":
+        launch_cli_server(localhost=host,port=int(port))
     elif mode == "cli_server_monitor":
         launch_cli_server(localhost=host,port=int(port),kind_app="monitor")
     else:
-        launch_cli_server(localhost=host,port=int(port))
+        print("Opzione non valida")
+        exit(2)
 
+
+def option():
+    parser=argparse.ArgumentParser(add_help="Differenti Modalità di lancio")
+    parser.add_argument('-p','--port',help="Porta di accesso al broker mqtt",default="1883",dest="port")
+    parser.add_argument('-i','--ip',help="Host di accesso al broker mqtt",default="localhost",dest="host")
+    parser.add_argument('-m','--mode',choices=["cli_client","cli_client_serial","cli_client_test_net","cli_client_monitor","cli_server","cli_server_monitor"],dest="mode",default="cli_server")
+    opt= parser.parse_args()
+    return opt.__dict__
 
 if __name__ == "__main__":
-    launch()
+    opts=option()
+    launch(**opts)

@@ -73,7 +73,7 @@ async def test_net(time_before: timedelta = None, time_after: timedelta = None, 
         time_before = timedelta(seconds=0)
     time_before = time_before.total_seconds()
     if time_after is None:
-        time_after = timedelta(seconds=0.05)
+        time_after = timedelta(seconds=1)
     time_after = time_after.total_seconds()
     if nodes is None:
         return
@@ -83,37 +83,41 @@ async def test_net(time_before: timedelta = None, time_after: timedelta = None, 
     ray = 10000
     step_ray = 1
     while True:
-        message = []
-        for x in nodes:
-            message.append(x.copy())
-            if x["x"] == x["y"] == x["z"] == 0:
-                next_step=(counter/max_step)*2*math.pi*step_ray
-                message[-1]["x"] = math.cos(next_step)*ray
-                message[-1]["y"] = math.sin(next_step)*ray
-                message[-1]["z"] = math.tan(next_step)*ray
-            elif x["x"] == x["y"] == x["z"] == -1:          
-                next_step=(counter/max_step)* 2*math.pi*(-step_ray)
-                message[-1]["x"] = math.cos(next_step)*ray
-                message[-1]["y"] = math.sin(next_step)*ray
-                message[-1]["z"] = math.tan(next_step)*ray
-        counter += step
-        if counter >= max_step:
-            counter = 0
-            step_ray *= -1
-        async with mqttools.Client(server, port, connect_delays=[0.1]) as client:
-            time.sleep(time_before)
-            values = []
-            columns = list(message[-1].keys())
-            for row in message:
-                values.append([])
-                for label in row.keys():
-                    values[-1].append(row[label])
-            data = dict(series=[dict(
-                columns=columns,
-                values=values
-            )])
-            response = client.publish(topic, json.dumps(dict(header="", payload=dict(
-                data=data))).encode('utf-8'))
-            print(dt.utcnow(), "write to {} --- this message".format(topic),
-                  "\nMessage", message, "\nResponse", response)
-            time.sleep(time_after)
+        try:
+            async with mqttools.Client(server, port, connect_delays=[0.1]) as client:
+                while True:
+                    message = []
+                    for x in nodes:
+                        message.append(x.copy())
+                        if x["x"] == x["y"] == x["z"] == 0:
+                            next_step=(counter/max_step)*2*math.pi*step_ray
+                            message[-1]["x"] = math.cos(next_step)*ray
+                            message[-1]["y"] = math.sin(next_step)*ray
+                            message[-1]["z"] = math.tan(next_step)*ray
+                        elif x["x"] == x["y"] == x["z"] == -1:          
+                            next_step=(counter/max_step)* 2*math.pi*(-step_ray)
+                            message[-1]["x"] = math.cos(next_step)*ray
+                            message[-1]["y"] = math.sin(next_step)*ray
+                            message[-1]["z"] = math.tan(next_step)*ray
+                    counter += step
+                    if counter >= max_step:
+                        counter = 0
+                        step_ray *= -1
+                    time.sleep(time_before)
+                    values = []
+                    columns = list(message[-1].keys())
+                    for row in message:
+                        values.append([])
+                        for label in row.keys():
+                            values[-1].append(row[label])
+                    data = dict(series=[dict(
+                        columns=columns,
+                        values=values
+                    )])
+                    response = client.publish(topic, json.dumps(dict(header="", payload=dict(
+                        data=data))).encode('utf-8'))
+                    print(dt.utcnow(), "write to {} --- this message".format(topic),
+                            "\nMessage", message, "\nResponse", response)
+                    time.sleep(time_after)
+        except Exception as e:
+            print("ERRORE",e)
