@@ -6,12 +6,22 @@
     "configurations": [
         
         {
-            "name": "Python: Current File",
+            "name": "Python: Server Locale",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
+            "python": "/home/andy/Env/Virtualenv/elux_eseb/bin/python3",
+            "program": "${workspaceFolder}/agent_py/main.py",
             "console": "integratedTerminal",
             "args": ["--mode", "cli_server", "--host", "localhost", "--port", "30000"]
+        },        
+        {
+            "name": "Python: Test Ping File",
+            "type": "python",
+            "request": "launch",
+            "python": "/home/andy/Env/Virtualenv/elux_eseb/bin/python3",
+            "program": "${workspaceFolder}/agent_py/main.py",
+            "console": "integratedTerminal",
+            "args": ["--mode", "test_ping"]
         }
     ]
 }

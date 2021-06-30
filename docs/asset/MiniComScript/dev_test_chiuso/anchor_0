@@ -1,9 +1,0 @@
-send ""
-
-send aps 1400 0 1300
-expect "aps: ok"
-
-send apg
-expect "apg: x:1400 y:0 z:1300 qf:100"
-
-exit
