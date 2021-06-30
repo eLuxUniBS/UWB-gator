@@ -155,7 +155,7 @@ async def wrapper_serial_callback_pub(
                         logger.debug("ReadLine")
                         buffer = cli.readline(1024)
                         cb_topic, cb_response = cb(
-                            *args, input_message=buffer.decode("utf-8"), **kwargs)
+                            *args,id_send=id_send, input_message=buffer.decode("utf-8"), **kwargs)
                         logger.debug("Verifica")
                         logger.debug("Topic {}".format(cb_topic))
                         if cb_topic is None:

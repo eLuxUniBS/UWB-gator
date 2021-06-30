@@ -32,6 +32,7 @@ class CMDMode(Enum):
     sub_db_rel = "sub_db_rel"
     sub_db_unrel = "sub_db_unrel"
     sub_db_serial = "sub_db_serial"
+    sub_db_unrel_serial = "sub_db_unrel_serial"
 
 
 class CMDSerial(Enum):
@@ -54,14 +55,17 @@ def launch_serial(host, port, *args, serial_opt: str = None, **kwargs):
     launch_cli_client([
         wrapper_serial_callback_pub(
             host=host, port=port,
-            channel="/db_serial",
+            channel="/db_unrel",
             serial_path=serial_path,
             baudrate=baudrate,
             timeout=timeout,
             cb=pubs.cmd_serial.parsing_message_unitn,
             mark_ts=dt.utcnow().__str__(),
-            time_wait_before=float(kwargs.get(CMDOption.param_time_before.value)),
-            time_wait_after=float(kwargs.get(CMDOption.param_time_after.value)),
+            id_send=serial_path,
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value)),
         )
     ])
 
@@ -69,7 +73,8 @@ def launch_serial(host, port, *args, serial_opt: str = None, **kwargs):
 def launch(*args, **kwargs):
     try:
         mode = kwargs[CMDOption.params_mode.value]
-        kwargs[CMDOption.params_port.value] = int(kwargs[CMDOption.params_port.value])
+        kwargs[CMDOption.params_port.value] = int(
+            kwargs[CMDOption.params_port.value])
         mode = [single for single in CMDMode if single.value == mode][0]
     except Exception as e:
         print("Errore nei parametri di ingresso", e)
@@ -84,11 +89,15 @@ def launch(*args, **kwargs):
         launch_cli_client([wrapper_callback_sub(
             channel="/db_serial",
             cb=orm.cmd.query_serial, mark_ts=str(dt.utcnow()))])
-    elif mode == CMDMode.sub_db_unrel:
+    elif mode in [CMDMode.sub_db_unrel, CMDMode.sub_db_unrel_serial]:
+        cb = orm.cmd.query_unrel
+        if mode == CMDMode.sub_db_unrel_serial:
+            cb = orm.cmd.save_serial_data
         launch_cli_client([
             wrapper_callback_sub(
                 channel="/db_unrel",
-                cb=orm.cmd.query_unrel, mark_ts=str(dt.utcnow())),
+                cb=cb,
+                mark_ts=str(dt.utcnow())),
         ])
     elif mode == CMDMode.pub_ping_test:
         launch_cli_client([wrapper_callback_pub(

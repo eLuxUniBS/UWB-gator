@@ -7,14 +7,19 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def parsing_message_unitn(*args, input_message: str = None, ts_collected: dt = None, **kwargs) -> dict:
+def parsing_message_unitn(*args, id_send: str = "", input_message: str = None, ts_collected: dt = None, **kwargs) -> dict:
     """
     Funzione parsing riga seriale Firmware UniTN v2. Se riesce, allora ho una struttura, altrimenti ho una sua versione incompleta;
     la struttura ritornata contiene in raw_content il messaggio originale
     """
     if input_message is None:
         logger.debug("Messaggio vuoto, pertanto inutile proseguire")
-        return None,None
+        return None, dict(
+            header=dict(
+                id_send=id_send,
+                ts_send=dt.utcnow().timestamp()
+            ),
+            payload=None)
     # Parsing messaggio con successo!
     scheme = dict(raw_distance=dict(val=None, label="SUCCESS"), distance=dict(val=None, label="bias"),
                   first_peak_pwr=dict(val=None, label="fppwr"), receive_power=dict(val=None, label="rxpwr"),
@@ -24,7 +29,7 @@ def parsing_message_unitn(*args, input_message: str = None, ts_collected: dt = N
     try:
         # Add ts collected
         struct_message["ts_collected"] = ts_collected if ts_collected is not None else dt.utcnow()
-        struct_message["ts_collected"]=struct_message["ts_collected"].__str__()
+        struct_message["ts_collected"] = struct_message["ts_collected"].__str__()
         # Try to filter data
         list_message = [x.strip() for x in input_message.strip().split(" ")]
         for single_item in scheme.keys():
@@ -45,9 +50,19 @@ def parsing_message_unitn(*args, input_message: str = None, ts_collected: dt = N
         except Exception as e:
             struct_message["sender"] = None
             struct_message["receiver"] = None
-        return None,struct_message
+        return None, dict(
+            header=dict(
+                id_send=id_send,
+                ts_send=dt.utcnow().timestamp()
+            ),
+            payload=struct_message)
     except Exception as e:
         print(e)
     struct_message["detected"] = False
     struct_message["raw_content"] = input_message
-    return None,struct_message
+    return None, dict(
+        header=dict(
+            id_send=id_send,
+            ts_send=dt.utcnow().timestamp()
+        ),
+        payload=struct_message)

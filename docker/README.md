@@ -1,0 +1,1 @@
+# Container per la raccolta dati
