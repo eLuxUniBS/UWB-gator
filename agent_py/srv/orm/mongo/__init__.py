@@ -1,4 +1,4 @@
-from db.cfg import DB_PARAM
+from srv.orm.cfg import DB_PARAM
 
 if DB_PARAM.get("db", dict()).get("driver", "") == "mongo":
     from pymodm import connect

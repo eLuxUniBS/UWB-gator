@@ -1,11 +1,11 @@
 from types import SimpleNamespace
 
-from orm.cfg import DB_PARAM
+from srv.orm.cfg import DB_PARAM
 
 client = SimpleNamespace()
 if DB_PARAM.get("dbseries", dict()).get("driver", "") == "influxdb":
     config = DB_PARAM["dbseries"]
-    from .proxy_db import *
+    from srv.orm.influxdb.proxy_db import *
 
     for single_table in config["db_tables"]:
         params = dict(
