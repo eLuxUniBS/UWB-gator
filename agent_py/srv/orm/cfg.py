@@ -12,11 +12,12 @@ DB_PARAM = {
     "dbseries": {
         "driver": "influxdb",
         "db_host": 'localhost',
-        "db_port": "18086",
+        "db_port": "8086",
+        # "db_port": "18086",
         "db_username": "root",
         "db_password": "root",
         "db_database": "test_rilevamento_statico",
-        "db_tables": ["last", "log"]
+        "db_tables": {"log":{"force_time":True}, "last":{"remove_fields":["ts"]}}
     }
 }
 if os.environ.get("DOCKER_ENV",None) is not None:
@@ -36,6 +37,6 @@ if os.environ.get("DOCKER_ENV",None) is not None:
             "db_username": "root",
             "db_password": "root",
             "db_database": "test_rilevamento_statico",
-            "db_tables": ["last", "log"]
+            "db_tables": {"log":{"force_time":True}, "last":{"remove_fields":["ts"]}}
         }
     }

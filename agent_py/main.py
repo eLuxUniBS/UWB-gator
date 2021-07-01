@@ -8,6 +8,16 @@ from srv.wrapper import wrapper_callback_sub, wrapper_callback_pub, ping, wrappe
 from srv import orm, pubs
 
 
+sample_nodes=[
+                dict(
+                    mac="c6:d6:37:d1:08:42", id="DWD537", x=0, y=0, z=0, q=100
+                    ),
+                dict(
+                    mac="e3:3a:13:b2:5f:56", id="DW8615", x=-1, y=-1, z=-1, q=100
+                    )  
+            ]
+
+
 async def launcher(list_cb: list):
     await asyncio.gather(*list_cb)
 
@@ -29,6 +39,8 @@ class CMDMode(Enum):
     sub_ping_test = "sub_ping_test"
     pub_serial = "pub_serial"
     pub_update_net = "pub_update_net"
+    pub_test_update_net = "pub_test_update_net"
+    sub_db_save_net = "sub_db_save_net"
     sub_db_rel = "sub_db_rel"
     sub_db_unrel = "sub_db_unrel"
     sub_db_serial = "sub_db_serial"
@@ -80,15 +92,53 @@ def launch(*args, **kwargs):
         print("Errore nei parametri di ingresso", e)
         exit()
     if mode == CMDMode.pub_update_net:
-        pass
-        # launch_cli_client(localhost=host, port=int(port),
-        #                   kind_app="mobile_app")
+        """
+        Sottoscrive tutte le richieste di aggiornamento della rete e pubblica sul /net lo stato attuale della rete
+        """
+        launch_cli_client([wrapper_callback_sub(
+            channel="/net/refresh",
+            cb=orm.cmd.read_net,
+            db_ref="serial",
+            topic_response="/net",
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value))
+        )
+        ])
+    elif mode == CMDMode.pub_test_update_net:
+        launch_cli_client([wrapper_callback_pub(
+            channel="/net/update",
+            cb=pubs.cmd_simulation.movement, nodes=sample_nodes,
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value))
+        )
+        ])
+    elif mode == CMDMode.sub_db_save_net:
+        launch_cli_client([wrapper_callback_sub(
+            channel="/net/update",
+            cb=orm.cmd.save_net,
+            db_ref="serial",
+            topic_response="/net/refresh",
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value))
+        )
+        ])
     elif mode == CMDMode.pub_serial:
         launch_serial(*args, **kwargs)
     elif mode == CMDMode.sub_db_serial:
         launch_cli_client([wrapper_callback_sub(
             channel="/db_serial",
-            cb=orm.cmd.query_serial, mark_ts=str(dt.utcnow()))])
+            cb=orm.cmd.query_serial, mark_ts=str(dt.utcnow()),
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value))
+            )])
     elif mode in [CMDMode.sub_db_unrel, CMDMode.sub_db_unrel_serial]:
         cb = orm.cmd.query_unrel
         if mode == CMDMode.sub_db_unrel_serial:
@@ -97,14 +147,26 @@ def launch(*args, **kwargs):
             wrapper_callback_sub(
                 channel="/db_unrel",
                 cb=cb,
-                mark_ts=str(dt.utcnow())),
+                mark_ts=str(dt.utcnow(),
+                            time_wait_before=float(kwargs.get(
+                                CMDOption.param_time_before.value)),
+                            time_wait_after=float(kwargs.get(
+                                CMDOption.param_time_after.value)))),
         ])
     elif mode == CMDMode.pub_ping_test:
         launch_cli_client([wrapper_callback_pub(
-            channel="/ping", cb=ping, mark_ts=str(dt.utcnow()))])
+            channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value)))])
     elif mode == CMDMode.sub_ping_test:
         launch_cli_client([wrapper_callback_sub(
-            channel="/ping", cb=ping, mark_ts=str(dt.utcnow()))])
+            channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
+            time_wait_before=float(kwargs.get(
+                CMDOption.param_time_before.value)),
+            time_wait_after=float(kwargs.get(
+                CMDOption.param_time_after.value)))])
     else:
         print("Opzione non prevista")
         exit(2)
