@@ -190,7 +190,7 @@ def option():
         default="localhost"
     )
     parser.add_argument(
-        '-m', '--mode',
+        '--mode',
         choices=[k.value for k in CMDMode],
         dest=CMDOption.params_mode.value,
         default="-missing-"

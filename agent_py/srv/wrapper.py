@@ -80,7 +80,7 @@ async def wrapper_callback_sub(*args, cb: Callable = ping, channel: str = None, 
                 logger.debug("Emissione messaggio dal canale {} con topic {}".format(
                     channel, cb_topic))
                 cb_response=json.dumps(cb_response).encode("utf-8")
-                await client.publish(topic=cb_topic, message=cb_response)
+                client.publish(topic=cb_topic, message=cb_response)
         except Exception as e:
             print(e)
             logger.warning("Errore CB SUBS")
