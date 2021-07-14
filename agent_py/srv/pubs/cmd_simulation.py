@@ -2,7 +2,7 @@ import math
 from datetime import datetime as dt
 
 counter=0
-def movement(nodes: list, step=5000, max_step=1000000, ray=10000, step_ray=1):
+def movement(nodes: list, step=50, max_step=5000, ray=5000, step_ray=1):
     """
     Simulazione di movimento elementi presenti in area
     """
