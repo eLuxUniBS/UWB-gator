@@ -1,24 +1,21 @@
-# Server ad agenti MQTT
+# Agenti MQTT
 
-Interfacciamento MQTT per DB 
-- MongoDB
-- InfluxDB
+Ciascun agente è dotato di uno specifico wrapper in cui inserire la propria funzione `cb` *callback* chiamata in base al topic scelto (con possibilità di inviare un messaggio a sua volta, su un nuovo topic specifico)
 
-## Inizializzazione DB
+## Docs
 
-Basta lanciare dalla cartella install, il file `initi_db.py`; i parametri dei
- nodi sono presenti nel file dataset.csv
+Cartella per la documentazione ed utilizzo
 
+## Architettura codice
 
-## Suite di TEST
+### Agent_py
 
-Basta lanciare la suite di test
-`bash launch_test_script.sh [nome-del-file]`
-dove al posto del nome-del-file si possono utilizzare i seguenti script
+Contiene gli agenti scritti in python
 
-- test_direct.py per lanciare alcuni  pubs su /net e /geo
-- test_agent.py per lanciare i subs su /net e /geo (basta modificare il
- manifest per aggiungere/rimuovere funzioni)
+### Agent_c
 
+Contiene gli agenti scritti in C
 
- 
+## Docker
+
+Contiene l'insieme di script per instanziare un sistema di raccolta dati (influxdb 1.8 e mongodb), con la possibilità di aggiungere agenti (nel file `lab_collect_data.yaml`)

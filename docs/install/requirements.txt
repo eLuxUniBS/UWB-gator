@@ -1,6 +1,0 @@
-mqttools
-influxdb-client
-pymodm
-click
-influxdb
-pyserial
