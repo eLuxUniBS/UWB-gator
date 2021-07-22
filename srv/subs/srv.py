@@ -33,7 +33,7 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
     response.
     """
     global db_ref_last, db_ref_log,db_ref_gen
-    logger.debug(f'channel', channel)
+    logger.debug(f'channel')
     client = await start_client(localhost=localhost, port=port)
     await client.subscribe(channel)
     while True:
@@ -41,11 +41,11 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
         if byte_content is None:
             continue
         try:
-            content = json.loads(byte_content.decode('utf-8'))
+            content=byte_content.decode('utf-8')
+            logger.debug(f'content')
+            content = json.loads(content)
         except Exception as e:
-            logger.debug(f'e', e)
-            print(byte_content)
-            print(e)
+            logger.debug(f'e')
             continue
         if test:
             continue
@@ -54,12 +54,9 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
             print('Echo client connection lost.')
             continue
         try:
-            # print("TOPIC",topic)
             if topic.find("/net/refresh") != -1:
-                print(content["payload"])
                 content["payload"] = db_ref_last.query(content["payload"])
-            elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:
-                #print("CONTENT IS ", content["payload"])
+            elif topic.find("/net/update") != -1 or topic.find("/geo/update") != -1:                
                 res_to_save = db_ref_last.query(content["payload"])
                 db_ref_log.query(content["payload"])
                 content["payload"] = res_to_save
@@ -73,7 +70,7 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
                         continue
                     temp = json.loads(single_data.get("obj"))
                     if temp.get("payload", None) is None:
-                        print("ERROR!")
+                        logger.info("Payload assente per {}".format(topic))
                         continue
                     if temp["payload"].get("data", None) is None:
                         prepare_data_to_save = dict(
@@ -105,7 +102,7 @@ async def response(channel="/buffer", branch=None, test=False, localhost=None, p
                 message = str(content)[:50] + "..." + str(content)[-50:]
             else:
                 message = str(content)
-            print(dt.utcnow(), "TOPIC", topic, "\nCONTENT",byte_content, "\nRESP IS", message)
+            logger.debug("{} TOPIC {}\nCONTENT{}\nRESPONSE IS\t {}".format(dt.utcnow(), topic,byte_content, message))
             if branch is not None:
                 client.publish(branch, json.dumps(content).encode('utf-8'))
             elif type(content.get("header",None)) is str:
