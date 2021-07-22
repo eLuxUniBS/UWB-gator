@@ -4,18 +4,18 @@ from enum import Enum
 from datetime import datetime as dt
 
 import serial
-from srv.wrapper import wrapper_callback_sub, wrapper_callback_pub, ping, wrapper_serial_callback_pub
-from srv import orm, pubs
+from agent_py.srv.wrapper import wrapper_callback_sub, wrapper_callback_pub, ping, wrapper_serial_callback_pub
+from agent_py.srv import orm, pubs
 
 
-sample_nodes=[
-                dict(
-                    mac="c6:d6:37:d1:08:42", id="DWD537", x=0, y=0, z=0, q=100
-                    ),
-                dict(
-                    mac="e3:3a:13:b2:5f:56", id="DW8615", x=-1, y=-1, z=-1, q=100
-                    )  
-            ]
+sample_nodes = [
+    dict(
+        mac="c6:d6:37:d1:08:42", id="DWD537", x=0, y=0, z=0, q=100
+    ),
+    dict(
+        mac="e3:3a:13:b2:5f:56", id="DW8615", x=-1, y=-1, z=-1, q=100
+    )
+]
 
 
 async def launcher(list_cb: list):
@@ -45,6 +45,7 @@ class CMDMode(Enum):
     sub_db_unrel = "sub_db_unrel"
     sub_db_serial = "sub_db_serial"
     sub_db_unrel_serial = "sub_db_unrel_serial"
+    rilevamento_pacchetti = "rilevamento_pacchetti"
 
 
 class CMDSerial(Enum):
@@ -53,7 +54,10 @@ class CMDSerial(Enum):
     serial_opt_timeout = "serial_timeout"
 
 
-def launch_serial(host, port, *args, serial_opt: str = None, **kwargs):
+def launch_serial(host, port, *args, serial_opt: str = None, channel: str = "/db_unrel", **kwargs):
+    """
+    I parametri in ingresso sono necessari per gestire la seriale di acquisizione dati
+    """
     serial_path = None
     baudrate = 115200
     timeout = 1
@@ -67,7 +71,7 @@ def launch_serial(host, port, *args, serial_opt: str = None, **kwargs):
     launch_cli_client([
         wrapper_serial_callback_pub(
             host=host, port=port,
-            channel="/db_unrel",
+            channel=channel,
             serial_path=serial_path,
             baudrate=baudrate,
             timeout=timeout,
@@ -82,6 +86,30 @@ def launch_serial(host, port, *args, serial_opt: str = None, **kwargs):
     ])
 
 
+def launch_rilevamento_pacchetti(*args, port: int = None, host: str = None, **kwargs):
+    """
+    Utility per lanciare il sistema pronto per recuperare i dati durante il rilevamento a pacchetti
+    """
+    launch_cli_client([wrapper_callback_sub(
+        host=host, port=port,
+        channel=channel,
+        cb=orm.cmd.save_net,
+        db_ref="unrel",
+        topic_response="/net/refresh",
+        time_wait_before=float(kwargs.get(
+            CMDOption.param_time_before.value)),
+        time_wait_after=float(kwargs.get(
+            CMDOption.param_time_after.value)),
+        **params) for params, channel in [
+            (dict(filter_mac_permitted=[
+             "aa:aa:aa:aa", "ff:ff:ff:ff"]), "/net/update"),
+            (dict(filter_mac_permitted=[
+             "aa:aa:aa:aa", "ff:ff:ff:ff"]), "/geo/update"),
+            (dict(log_data=True), "/net/archive")
+    ]
+    ])
+
+
 def launch(*args, **kwargs):
     try:
         mode = kwargs[CMDOption.params_mode.value]
@@ -90,12 +118,18 @@ def launch(*args, **kwargs):
         mode = [single for single in CMDMode if single.value == mode][0]
     except Exception as e:
         print("Errore nei parametri di ingresso", e)
-        exit()
+        exit(1)
+
+    try:
+        host = kwargs[CMDOption.params_host.value]
+        port = int(kwargs[CMDOption.params_port.value])
+    except:
+        print("PArametri di connessione al broker non completi", e)
+        exit(1)
     if mode == CMDMode.pub_update_net:
-        """
-        Sottoscrive tutte le richieste di aggiornamento della rete e pubblica sul /net lo stato attuale della rete
-        """
+        # Sottoscrive tutte le richieste di aggiornamento della rete e pubblica sul /net lo stato attuale della rete
         launch_cli_client([wrapper_callback_sub(
+            port=port, host=host,
             channel="/net/refresh",
             cb=orm.cmd.read_net,
             db_ref="serial",
@@ -106,18 +140,9 @@ def launch(*args, **kwargs):
                 CMDOption.param_time_after.value))
         )
         ])
-    elif mode == CMDMode.pub_test_update_net:
-        launch_cli_client([wrapper_callback_pub(
-            channel="/net/update",
-            cb=pubs.cmd_simulation.movement, nodes=sample_nodes,
-            time_wait_before=float(kwargs.get(
-                CMDOption.param_time_before.value)),
-            time_wait_after=float(kwargs.get(
-                CMDOption.param_time_after.value))
-        )
-        ])
     elif mode == CMDMode.sub_db_save_net:
         launch_cli_client([wrapper_callback_sub(
+            port=port, host=host,
             channel="/net/update",
             cb=orm.cmd.save_net,
             db_ref="serial",
@@ -128,45 +153,65 @@ def launch(*args, **kwargs):
                 CMDOption.param_time_after.value))
         )
         ])
+    # Pubblicazione dati da porta seriale
     elif mode == CMDMode.pub_serial:
         launch_serial(*args, **kwargs)
+    # Ricezione dati per caso "Rilevamento Pacchetti"
+    elif mode == CMDMode.rilevamento_pacchetti:
+        launch_rilevamento_pacchetti(*args,  **kwargs)
+
+    # Utility Generiche
+    # Salvataggio dati su database influxdb (time-serial)
     elif mode == CMDMode.sub_db_serial:
-        launch_cli_client([wrapper_callback_sub(
-            channel="/db_serial",
-            cb=orm.cmd.query_serial, mark_ts=str(dt.utcnow()),
-            time_wait_before=float(kwargs.get(
-                CMDOption.param_time_before.value)),
-            time_wait_after=float(kwargs.get(
-                CMDOption.param_time_after.value))
-            )])
+        launch_cli_client([wrapper_callback_sub(port=port, host=host,
+                                                channel="/db_serial",
+                                                cb=orm.cmd.query_serial, mark_ts=str(
+                                                    dt.utcnow()),
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value))
+                                                )])
+    # salvataggio dati per mongodb o per porta seriale
     elif mode in [CMDMode.sub_db_unrel, CMDMode.sub_db_unrel_serial]:
         cb = orm.cmd.query_unrel
         if mode == CMDMode.sub_db_unrel_serial:
             cb = orm.cmd.save_serial_data
         launch_cli_client([
-            wrapper_callback_sub(
-                channel="/db_unrel",
-                cb=cb,
-                mark_ts=str(dt.utcnow(),
-                            time_wait_before=float(kwargs.get(
-                                CMDOption.param_time_before.value)),
-                            time_wait_after=float(kwargs.get(
-                                CMDOption.param_time_after.value)))),
+            wrapper_callback_sub(port=port, host=host,
+                                 channel="/db_unrel",
+                                 cb=cb,
+                                 mark_ts=str(dt.utcnow(),
+                                             time_wait_before=float(kwargs.get(
+                                                 CMDOption.param_time_before.value)),
+                                             time_wait_after=float(kwargs.get(
+                                                 CMDOption.param_time_after.value)))),
         ])
+    # Utility per Test
+    elif mode == CMDMode.pub_test_update_net:
+        launch_cli_client([wrapper_callback_pub(port=port, host=host,
+                                                channel="/net/update",
+                                                cb=pubs.cmd_simulation.movement, nodes=sample_nodes,
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value))
+                                                )
+                           ])
     elif mode == CMDMode.pub_ping_test:
-        launch_cli_client([wrapper_callback_pub(
-            channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
-            time_wait_before=float(kwargs.get(
-                CMDOption.param_time_before.value)),
-            time_wait_after=float(kwargs.get(
-                CMDOption.param_time_after.value)))])
+        launch_cli_client([wrapper_callback_pub(port=port, host=host,
+                                                channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value)))])
     elif mode == CMDMode.sub_ping_test:
-        launch_cli_client([wrapper_callback_sub(
-            channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
-            time_wait_before=float(kwargs.get(
-                CMDOption.param_time_before.value)),
-            time_wait_after=float(kwargs.get(
-                CMDOption.param_time_after.value)))])
+        launch_cli_client([wrapper_callback_sub(port=port, host=host,
+                                                channel="/ping", cb=ping, mark_ts=dt.utcnow().__str__(),
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value)))])
     else:
         print("Opzione non prevista")
         exit(2)

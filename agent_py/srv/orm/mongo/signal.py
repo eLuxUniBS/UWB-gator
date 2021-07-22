@@ -1,7 +1,7 @@
-
-from pymodm import MongoModel
+import uuid
 from datetime import datetime as dt
 from pymodm import MongoModel, fields
+
 
 class RawSignal(MongoModel):
     """
@@ -33,7 +33,7 @@ class RawSignal(MongoModel):
         if header is None or body is None:
             return None
         base_datetime = dt(year=2000, month=1, day=1)
-        obj = cls(            
+        obj = cls(
             message_d_sender=body.get("sender", None),
             message_d_receiver=body.get("receiver", None),
             message_d_raw_distance=body.get("raw_distance", None),
@@ -42,13 +42,15 @@ class RawSignal(MongoModel):
             message_d_receive_power=body.get("receive_power", None),
             message_d_frequency_offset=body.get("frequency_offset", None),
             message_ts_collected=body.get("ts_collected", base_datetime),
-            message_ts_sendit=header.get("ts_send", header.get("ts", base_datetime)),
+            message_ts_sendit=header.get(
+                "ts_send", header.get("ts", base_datetime)),
             message_raw_content=body.get("raw_content", None),
-            id_sender=header.get("id_send","-missing-"),
+            id_sender=header.get("id_send", "-missing-"),
             ts=dt.utcnow()
         )
         obj.save()
-        print("SAVED {}@{} ts_collected {} ts_sendit {}".format(cls.__name__,obj.ts,obj.message_ts_collected,obj.message_ts_sendit))
+        print("SAVED {}@{} ts_collected {} ts_sendit {}".format(cls.__name__,
+                                                                obj.ts, obj.message_ts_collected, obj.message_ts_sendit))
 
 
 class GoodSignal(MongoModel):
@@ -92,10 +94,93 @@ class GoodSignal(MongoModel):
             message_d_receive_power=body.get("receive_power", None),
             message_d_frequency_offset=body.get("frequency_offset", None),
             message_ts_collected=body.get("ts_collected", base_datetime),
-            message_ts_sendit=header.get("ts_send", header.get("ts", base_datetime)),
+            message_ts_sendit=header.get(
+                "ts_send", header.get("ts", base_datetime)),
             message_raw_content=body.get("raw_content", None),
-            id_sender=header.get("id_send","-missing-"),
+            id_sender=header.get("id_send", "-missing-"),
             ts=dt.utcnow()
         )
         obj.save()
-        print("SAVED GOOD {} {}".format(cls.__name__,obj.ts))
+        print("SAVED GOOD {} {}".format(cls.__name__, obj.ts))
+
+
+class Log(MongoModel):
+    """
+    Deve contere tutti i dati raccolti
+    """
+    uuid = fields.UUIDField(default=uuid.uuid4)
+    ts = fields.DateTimeField(default=dt.utcnow)
+    id = fields.CharField(blank=True)
+    x = fields.FloatField(blank=True)
+    y = fields.FloatField(blank=True)
+    z = fields.FloatField(blank=True)
+    q = fields.FloatField(blank=True)
+    mac = fields.CharField(blank=True)
+    time = fields.BigIntegerField(blank=True)  # in microseconds
+
+    @classmethod
+    def create(cls, *args, input_data=None, **kwargs):
+        if input_data is None:
+            return False
+        buffer = list()
+        if type(input_data) is list:
+            for dataset in input_data:
+                buffer.append(dataset)
+        else:
+            buffer = [input_data]
+        buffer = [cls(
+            id=str(sample["id"]).strip().upper(),
+            x=float(sample["x"]),
+            y=float(sample["y"]),
+            z=float(sample["z"]),
+            q=float(sample["q"]),
+            mac=str(sample["mac"]).strip().upper(),
+            time=str(sample["time"]).strip().upper()
+        )
+            for sample in buffer]
+        cls.objects.bulk_create(buffer)
+        return True
+
+
+class Last(MongoModel):
+    """
+    Deve contenere solo l'ultima posizione delle ancore (indetificate per ID e mac address)
+    """
+
+    uuid = fields.UUIDField(default=uuid.uuid4)
+    ts = fields.DateTimeField(default=dt.utcnow)
+    id = fields.CharField(blank=True)
+    x = fields.FloatField(blank=True)
+    y = fields.FloatField(blank=True)
+    z = fields.FloatField(blank=True)
+    q = fields.FloatField(blank=True)
+    mac = fields.CharField(blank=True)
+    time = fields.BigIntegerField(blank=True)  # in microseconds
+
+    @classmethod
+    def create(cls, *args, input_data=None, **kwargs):
+        if input_data is None:
+            return False
+        buffer = input_data if type(input_data) is list else  [input_data]
+        buffer = [cls(
+            id=str(sample["id"]).strip().upper(),
+            x=float(sample["x"]),
+            y=float(sample["y"]),
+            z=float(sample["z"]),
+            q=float(sample["q"]),
+            mac=str(sample["mac"]).strip().upper(),
+            time=str(sample["time"]).strip().upper()
+        )
+            for sample in buffer]
+        for single_obj in buffer:
+            try:
+                obj = cls.objects.get(
+                    {"id": single_obj.id, "mac": single_obj.mac})
+                obj.x = single_obj.x
+                obj.y = single_obj.y
+                obj.z = single_obj.z
+                obj.q = single_obj.q
+                obj.time = single_obj.time
+            except Exception as e:
+                single_obj.save()
+        return True

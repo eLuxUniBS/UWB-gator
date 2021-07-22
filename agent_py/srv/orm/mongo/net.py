@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pymodm import MongoModel, fields
 
-from srv.orm.mongo.base_model import BaseModel
+from agent_py.srv.orm.mongo.base_model import BaseModel
 
 
 class Node(BaseModel):
