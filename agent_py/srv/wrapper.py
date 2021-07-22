@@ -71,22 +71,16 @@ async def wrapper_callback_sub(*args, cb: Callable = ping, channel: str = None, 
         try:
             logger.debug("Call CB IN SUB {}@{}".format(channel,
                       dt.utcnow().__str__()))
-            logger.debug("Step 0")
             cb_topic, cb_response = cb(*args, input_message=content, **kwargs)            
-            logger.debug("Step 1")
             if cb_topic == None:
                     cb_topic = topic_response
-            logger.debug("Step 2")
             if cb_response == None:
                 cb_response = dict()
-            logger.debug("Step 3")
             if cb_topic is not None:
                 logger.debug("Emissione messaggio dal canale {} con topic {}".format(
                     channel, cb_topic))
                 cb_response=json.dumps(cb_response).encode("utf-8")
-                logger.debug("Step 4")
                 client.publish(topic=cb_topic, message=cb_response)
-                logger.debug("Step 5")
         except Exception as e:
             logger.warning("Errore CB SUBS")            
             print(e)

@@ -97,7 +97,7 @@ def save_net(*args, db_ref: str = "serial", input_message: dict = None, log_data
     mongo.Last.create(input_data=buffer)
     if log_data:
         mongo.Log.create(input_data=buffer)
-    print("Buffer elements",len(buffer))
+    logger.info("Buffer elements [{}]".format(len(buffer)))
     return None, None
 
 
