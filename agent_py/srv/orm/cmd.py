@@ -78,26 +78,26 @@ def save_net(*args, db_ref: str = "serial", input_message: dict = None, log_data
                 }
             }
         """
-        buffer = input_message.get("payload", dict()).get("data", dict())
-        if type(buffer) == str:
-            buffer = json.loads(buffer)
-            buffer = buffer.get("data")
-            buffer = [json.loads(x.get("obj")).get(
-                "payload", dict()).get("data", dict()) for x in buffer]
-        elif buffer.get("fields", None) is not None:
-            buffer = [buffer]
-        else:
-            return None, None
-        buffer = [{**single.get("fields", dict()), **single.get("tags", dict())}
-                  for single in buffer]
+    buffer = input_message.get("payload", dict()).get("data", dict())
+    if type(buffer) == str:
+        buffer = json.loads(buffer)
+        buffer = buffer.get("data")
+        buffer = [json.loads(x.get("obj")).get(
+            "payload", dict()).get("data", dict()) for x in buffer]
+    elif buffer.get("fields", None) is not None:
+        buffer = [buffer]
     else:
         return None, None
+    buffer = [{**single.get("fields", dict()), **single.get("tags", dict())}
+                for single in buffer]
+    
     if filter_mac_permitted is not None:
         buffer = [x for x in buffer if x.get(
             "mac", "").strip().lower() in filter_mac_permitted]
     mongo.Last.create(input_data=buffer)
     if log_data:
-        mongo.Log.create(input_data=buffer)    
+        mongo.Log.create(input_data=buffer)
+    print("Buffer elements",len(buffer))
     return None, None
 
 

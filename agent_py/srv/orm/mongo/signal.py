@@ -109,14 +109,14 @@ class Log(MongoModel):
     Deve contere tutti i dati raccolti
     """
     uuid = fields.UUIDField(default=uuid.uuid4)
-    ts = fields.DateTimeField(default=dt.utcnow)
+    ts_created = fields.DateTimeField(default=dt.utcnow)
     id = fields.CharField(blank=True)
     x = fields.FloatField(blank=True)
     y = fields.FloatField(blank=True)
     z = fields.FloatField(blank=True)
     q = fields.FloatField(blank=True)
     mac = fields.CharField(blank=True)
-    time = fields.BigIntegerField(blank=True)  # in microseconds
+    ts = fields.BigIntegerField(blank=True)  # in microseconds
 
     @classmethod
     def create(cls, *args, input_data=None, **kwargs):
@@ -135,7 +135,7 @@ class Log(MongoModel):
             z=float(sample["z"]),
             q=float(sample["q"]),
             mac=str(sample["mac"]).strip().upper(),
-            time=str(sample["time"]).strip().upper()
+            ts=str(sample["ts"]).strip().upper()
         )
             for sample in buffer]
         cls.objects.bulk_create(buffer)
@@ -148,20 +148,20 @@ class Last(MongoModel):
     """
 
     uuid = fields.UUIDField(default=uuid.uuid4)
-    ts = fields.DateTimeField(default=dt.utcnow)
+    ts_created = fields.DateTimeField(default=dt.utcnow)
     id = fields.CharField(blank=True)
     x = fields.FloatField(blank=True)
     y = fields.FloatField(blank=True)
     z = fields.FloatField(blank=True)
     q = fields.FloatField(blank=True)
     mac = fields.CharField(blank=True)
-    time = fields.BigIntegerField(blank=True)  # in microseconds
+    ts = fields.BigIntegerField(blank=True)  # in microseconds
 
     @classmethod
     def create(cls, *args, input_data=None, **kwargs):
         if input_data is None:
             return False
-        buffer = input_data if type(input_data) is list else  [input_data]
+        buffer = input_data if type(input_data) is list else  [input_data]        
         buffer = [cls(
             id=str(sample["id"]).strip().upper(),
             x=float(sample["x"]),
@@ -169,18 +169,19 @@ class Last(MongoModel):
             z=float(sample["z"]),
             q=float(sample["q"]),
             mac=str(sample["mac"]).strip().upper(),
-            time=str(sample["time"]).strip().upper()
+            ts=str(sample["ts"]).strip().upper()
         )
             for sample in buffer]
         for single_obj in buffer:
             try:
                 obj = cls.objects.get(
-                    {"id": single_obj.id, "mac": single_obj.mac})
+                    {"id": single_obj.id})
                 obj.x = single_obj.x
                 obj.y = single_obj.y
                 obj.z = single_obj.z
                 obj.q = single_obj.q
-                obj.time = single_obj.time
+                obj.ts = single_obj.ts
+                obj.save()                
             except Exception as e:
                 single_obj.save()
         return True

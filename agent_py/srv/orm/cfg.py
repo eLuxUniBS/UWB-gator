@@ -4,7 +4,7 @@ DB_PARAM = {
            "db_name": "test_rilevamento_statico",
            "db_host": "localhost",
         #    "db_port": "17017",
-           "db_port": "27017",
+           "db_port": "20127",
         #    "db_username": "root",
         #    "db_password": "root",
            "option_query": "?authSource=admin"
