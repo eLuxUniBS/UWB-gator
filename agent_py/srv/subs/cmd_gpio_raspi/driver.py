@@ -25,7 +25,7 @@ led_obj = {label.lower().strip(): AllarmLedValue[label] for label in led_obj}
 def set_gpio(*args, input_message: dict = None, **kwargs):
     """
     """
-    logger.debug("DUMMY DRIVER")
+    logger.debug("HW DRIVER")
     flag = input_message.get("flag", None)
     if flag is None:
         logger.debug("Messaggio vuoto o errato\n{}".format(
