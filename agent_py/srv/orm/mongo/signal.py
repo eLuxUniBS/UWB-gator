@@ -129,6 +129,8 @@ class Log(MongoModel):
         else:
             buffer = [input_data]
         buffer = [cls(
+            uuid=uuid.uuid4(),
+            ts_created=dt.utcnow(),
             id=str(sample["id"]).strip().upper(),
             x=float(sample["x"]),
             y=float(sample["y"]),
@@ -161,8 +163,10 @@ class Last(MongoModel):
     def create(cls, *args, input_data=None, **kwargs):
         if input_data is None:
             return False
-        buffer = input_data if type(input_data) is list else  [input_data]        
+        buffer = input_data if type(input_data) is list else [input_data]
         buffer = [cls(
+            uuid=uuid.uuid4(),
+            ts_created=dt.utcnow(),
             id=str(sample["id"]).strip().upper(),
             x=float(sample["x"]),
             y=float(sample["y"]),
@@ -176,12 +180,13 @@ class Last(MongoModel):
             try:
                 obj = cls.objects.get(
                     {"id": single_obj.id})
+                obj.ts_created = single_obj.ts_created
                 obj.x = single_obj.x
                 obj.y = single_obj.y
                 obj.z = single_obj.z
                 obj.q = single_obj.q
                 obj.ts = single_obj.ts
-                obj.save()                
+                obj.save()
             except Exception as e:
                 single_obj.save()
         return True

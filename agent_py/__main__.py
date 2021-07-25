@@ -5,7 +5,7 @@ from datetime import datetime as dt
 
 import serial
 from agent_py.srv.wrapper import wrapper_callback_sub, wrapper_callback_pub, ping, wrapper_serial_callback_pub
-from agent_py.srv import orm, pubs
+from agent_py.srv import orm, pubs, subs
 
 
 sample_nodes = [
@@ -45,6 +45,7 @@ class CMDMode(Enum):
     sub_db_unrel = "sub_db_unrel"
     sub_db_serial = "sub_db_serial"
     sub_db_unrel_serial = "sub_db_unrel_serial"
+    sub_raspi_gpio = "sub_raspi_gpio"
     rilevamento_pacchetti = "rilevamento_pacchetti"
 
 
@@ -54,7 +55,7 @@ class CMDSerial(Enum):
     serial_opt_timeout = "serial_timeout"
 
 
-def launch_serial(host, port, *args, serial_opt: str = None, channel: str = "/db_unrel", **kwargs):
+def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = "/db_unrel", **kwargs):
     """
     I parametri in ingresso sono necessari per gestire la seriale di acquisizione dati
     """
@@ -75,7 +76,7 @@ def launch_serial(host, port, *args, serial_opt: str = None, channel: str = "/db
             serial_path=serial_path,
             baudrate=baudrate,
             timeout=timeout,
-            cb=pubs.cmd_serial.parsing_message_unitn,
+            cb=cb,
             mark_ts=dt.utcnow().__str__(),
             id_send=serial_path,
             time_wait_before=float(kwargs.get(
@@ -155,11 +156,25 @@ def launch(*args, **kwargs):
         ])
     # Pubblicazione dati da porta seriale
     elif mode == CMDMode.pub_serial:
-        launch_serial(*args, **kwargs)
-    # Ricezione dati per caso "Rilevamento Pacchetti"
+        launch_serial(
+            *args, cb=pubs.cmd_serial.unitn_raw_parse_message, **kwargs)
+    # Ricezione dati per caso "Rilevamento Pacchetti" utilizzato per rilevare i dati in contesto statico
     elif mode == CMDMode.rilevamento_pacchetti:
         launch_rilevamento_pacchetti(*args,  **kwargs)
-
+    # Comunicazione con GPIO: ricezione comandi per GPIO
+    elif mode == CMDMode.sub_raspi_gpio:
+        launch_serial(
+            *args, cb=pubs.cmd_serial.unitn_raw_detect_allarm, channel="/gpio/update", **kwargs)
+    # Comunicazione con GPIO: richiesta accensione GPIO
+    elif mode == CMDMode.pub_raspi_gpio:
+        launch_cli_client([wrapper_callback_sub(port=port, host=host,
+                                                channel="/gpio/update",
+                                                cb=subs.cmd_gpio_raspi.set_gpio,
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value))
+                                                )])
     # Utility Generiche
     # Salvataggio dati su database influxdb (time-serial)
     elif mode == CMDMode.sub_db_serial:

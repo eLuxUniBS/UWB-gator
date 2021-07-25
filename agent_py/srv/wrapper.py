@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def ping(*args, input_message: dict = None,time_wait_before: float = 0.0, time_wait_after: float = .0, **kwargs) -> tuple:
+def ping(*args, input_message: dict = None, time_wait_before: float = 0.0, time_wait_after: float = .0, **kwargs) -> tuple:
     """
     Funzionalità di ping per il test della comunicazione
     """
@@ -27,7 +27,7 @@ def ping(*args, input_message: dict = None,time_wait_before: float = 0.0, time_w
     return None, {"ping": "pong", "ts": ts}
 
 
-async def wrapper_callback_sub(*args, cb: Callable = ping, channel: str = None, host: str = None, port: int = None, connection_delays: list = None, turn_off_with_empty_topic: bool = False, topic_response: str = None,time_wait_before: float = 0.0, time_wait_after: float = 0.0, **kwargs):
+async def wrapper_callback_sub(*args, cb: Callable = ping, channel: str = None, host: str = None, port: int = None, connection_delays: list = None, turn_off_with_empty_topic: bool = False, topic_response: str = None, time_wait_before: float = 0.0, time_wait_after: float = 0.0, **kwargs):
     """
     Subscriber Wrapper
     - cb è una funzione definita 
@@ -70,19 +70,19 @@ async def wrapper_callback_sub(*args, cb: Callable = ping, channel: str = None, 
             return
         try:
             logger.debug("Call CB IN SUB {}@{}".format(channel,
-                      dt.utcnow().__str__()))
-            cb_topic, cb_response = cb(*args, input_message=content, **kwargs)            
+                                                       dt.utcnow().__str__()))
+            cb_topic, cb_response = cb(*args, input_message=content, **kwargs)
             if cb_topic == None:
-                    cb_topic = topic_response
+                cb_topic = topic_response
             if cb_response == None:
                 cb_response = dict()
             if cb_topic is not None:
                 logger.debug("Emissione messaggio dal canale {} con topic {}".format(
                     channel, cb_topic))
-                cb_response=json.dumps(cb_response).encode("utf-8")
+                cb_response = json.dumps(cb_response).encode("utf-8")
                 client.publish(topic=cb_topic, message=cb_response)
         except Exception as e:
-            logger.warning("Errore CB SUBS")            
+            logger.warning("Errore CB SUBS")
             print(e)
             logger.debug("Errore esecuzione callback\n{}".format(e.__str__()))
         time.sleep(time_wait_after)
@@ -113,20 +113,21 @@ async def wrapper_callback_pub(
             try:
                 time.sleep(time_wait_before)
                 logger.debug("Call CB IN PUB {}@{}".format(channel,
-                          dt.utcnow().__str__()))
+                                                           dt.utcnow().__str__()))
                 cb_topic, cb_response = cb(*args, **kwargs)
                 if cb_topic == None:
                     cb_topic = channel
                 if cb_response == None:
                     cb_response = dict()
                 if cb_topic is not None:
-                    logger.debug("Invio messaggio {}".format(cb_topic))                    
-                    cb_response=json.dumps(cb_response).encode("utf-8")
+                    logger.debug("Invio messaggio {}".format(cb_topic))
+                    cb_response = json.dumps(cb_response).encode("utf-8")
                     client.publish(topic=cb_topic, message=cb_response)
             except Exception as e:
                 print(e)
                 logger.warning("Errore CB PUB")
-                logger.debug("Errore esecuzione callback\n{}".format(e.__str__()))
+                logger.debug(
+                    "Errore esecuzione callback\n{}".format(e.__str__()))
             time.sleep(time_wait_after)
 
 
@@ -140,6 +141,10 @@ async def wrapper_serial_callback_pub(
     time_wait_before: float = 0.0,
     time_wait_after: float = 1.0,
         **kwargs):
+    """
+    Wrapper per gestire i servizi publisher che trasferiscono i dati provenienti dalla seriale al broker mqtt
+    
+    """
     # Pulizia parametri
     channel = channel if channel is not None else "/test"
     host = host if host is not None else "localhost"
@@ -156,19 +161,24 @@ async def wrapper_serial_callback_pub(
                     try:
                         time.sleep(time_wait_before)
                         logger.debug("ReadLine")
-                        buffer = cli.readline(1024)
+                        buffer = cli.readline(buffer_read)
                         cb_topic, cb_response = cb(
-                            *args,id_send=id_send, input_message=buffer.decode("utf-8"), **kwargs)
+                            *args,
+                            id_send=id_send,
+                            input_message=buffer.decode("utf-8"),
+                            **kwargs
+                        )
                         logger.debug("Verifica")
                         logger.debug("Topic {}".format(cb_topic))
                         if cb_topic == None:
-                             cb_topic = channel
+                            cb_topic = channel
                         if cb_response == None:
                             cb_response = dict()
                         # cb_response = json.dumps(cb_response).encode('utf-8')
                         if cb_topic is not None:
                             logger.debug("Invio messaggio {}".format(cb_topic))
-                            cb_response=json.dumps(cb_response).encode("utf-8")
+                            cb_response = json.dumps(
+                                cb_response).encode("utf-8")
                             client.publish(topic=cb_topic, message=cb_response)
                     except Exception as e:
                         logger.warning("Errore CB Serial PUB")
