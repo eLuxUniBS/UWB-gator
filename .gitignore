@@ -167,3 +167,4 @@ pip-selfcheck.json
 .gitignore
 */__pycache__/
 */*/__pycache__/
+.env
