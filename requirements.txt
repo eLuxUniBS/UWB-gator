@@ -2,4 +2,4 @@ pyserial
 mqttools
 influxdb
 pymodm
-gpio
+gpiozero
