@@ -29,3 +29,27 @@ Dove ```-m sub_db_unrel_serial``` modalità ricezione su mongodb di messaggi ser
 detected=True
 ```
 allora verrà salvato in una collection specifica (oltre ad esser salvato nella collezione raw).
+
+
+# Demo
+
+## Dispositivo body
+- wifi accesspoint
+```bash
+python3 -m agent_py --mode pub_raspi_gpio
+```
+```bash
+python3 -m agent_py --mode repeater_gpio_to_net
+```
+## Dispositivo estremità
+```bash
+python3 -m agent_py --mode pub_raspi_gpio
+```
+
+## Dispositivo gpio
+
+Ogni volta che riceve un messaggio con topic dedicato al gpio, aggiorna i gpio
+
+```bash
+python3 -m agent_py --mode sub_raspi_gpio
+```
