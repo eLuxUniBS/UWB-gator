@@ -13,9 +13,9 @@ class AllarmLedValue(Enum):
     label allarme  =  numero GPIO
     """
     black = (0,1,2)
-    red = (0,)
+    red = (2,)
     yellow = (1,)
-    green = (2,)
+    green = (0,)
     white = ()
 
 
@@ -24,6 +24,7 @@ led_obj = {label.lower().strip(): AllarmLedValue[label] for label in led_obj}
 list_led={"0":dict(val=18,label="LED1",status=False),"1":dict(val=23,label="LED2",status=False),"2":dict(val=24,label="LED3",status=False)}
 def init_gpio():
     global list_led
+    GPIO.setmode(GPIO.BCM)
     for x in list_led:    
         GPIO.setup(list_led[x].get("val"), GPIO.OUT)
 

@@ -55,6 +55,7 @@ class CMDSerial(Enum):
     serial_opt_path = "serial_path"
     serial_opt_baudrate = "serial_baudrate"
     serial_opt_timeout = "serial_timeout"
+    serial_id_station = "serial_id_station"
 
 def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = "/db_unrel", **kwargs):
     """
@@ -63,6 +64,7 @@ def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = 
     serial_path = None
     baudrate = 115200
     timeout = 1
+    serial_id = "dummy_station"
     for label in kwargs.keys():
         if label == CMDSerial.serial_opt_baudrate.value:
             baudrate = kwargs.get(label, baudrate)
@@ -70,6 +72,8 @@ def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = 
             serial_path = kwargs.get(label, serial_path)
         elif label == CMDSerial.serial_opt_timeout.value:
             timeout = int(kwargs.get(label, timeout))
+        elif label == CMDSerial.serial_id_station.value:
+            serial_id=str(kwargs.get(label,serial_id)).strip()
     launch_cli_client([
         wrapper_serial_callback_pub(
             host=host, port=port,
@@ -79,7 +83,7 @@ def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = 
             timeout=timeout,
             cb=cb,
             mark_ts=dt.utcnow().__str__(),
-            id_send=serial_path,
+            id_send=serial_id,
             time_wait_before=float(kwargs.get(
                 CMDOption.param_time_before.value)),
             time_wait_after=float(kwargs.get(
@@ -290,6 +294,11 @@ def option():
         '-st', '--serial_timeout',
         dest=CMDSerial.serial_opt_timeout.value,
         default=1
+    )
+    parser.add_argument(
+        '-si', '--serial_id',
+        dest=CMDSerial.serial_id_station.value,
+        default="dummy_driver"
     )
     opt = parser.parse_args()
     return opt.__dict__
