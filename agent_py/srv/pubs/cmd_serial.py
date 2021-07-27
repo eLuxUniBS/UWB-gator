@@ -55,7 +55,7 @@ def unitn_raw_parse_message(*args, id_send: str = None, input_message: str = Non
                     struct_message[single_item] = list_message[index_base + 1]
         # Add Raw
         struct_message["raw_content"] = input_message
-        # Retriece sender-receiver, eg. c517->8615
+        # Retrieve sender-receiver, eg. c517->8615
         try:
             index_base = list_message.index("SUCCESS") - 1
             if index_base >= 0:
@@ -98,20 +98,26 @@ def unitn_raw_detect_allarm(*args, consider_raw_distance: bool = False, consider
     message = dict(allert_distance="", id="{send}->{res}".format(
         send=message_content.get("payload", dict()).get("sender", ""),
         res=message_content.get("payload", dict()).get("receiver", "")
-    ), flag="", distance=dict())
+    ), flag="", distance="",raw_distance="")
     if consider_distance == consider_raw_distance == False:
         return None, None
     elif consider_distance:
         message["allert_distance"] = message_content.get(
             "payload", dict()).get("distance", "")
-        message["values"]["distance"] = message_content.get(
-            "payload", dict()).get("distance", "")
+    
     elif consider_raw_distance:
-        message["values"]["raw_distance"] = message_content.get(
+        message["allert_distance"] = message_content.get(
             "payload", dict()).get("raw_distance", "")
+    message["raw_distance"] = message_content.get(
+        "payload", dict()).get("raw_distance", "")
+    message["distance"] = message_content.get(
+        "payload", dict()).get("distance", "")
     # Passaggio dai valori numerici ad un flag testuale
+    print("A")
     buffer = [x.split(".")[-1] for x in list(map(str, ColorCode))]
+    print("B",buffer)
     for field, scale in [(x, ColorCode[x]) for x in buffer]:
-        if float(min(scale)) < float(message) <= float(max(scale)):
+        if float(min(scale.value)) < float(message["allert_distance"]) <= float(max(scale.value)):
             message["flag"] = str(field).strip().lower()
+    print("MESSAGE",message)
     return None, message

@@ -44,7 +44,9 @@ def movement(nodes: list, step=50, max_step=5000, ray=5000, step_ray=1):
     return None, dict(query="save", data=data)
 
 
-def transform_coordinates_into_message(*args,id: str, mac: str, x: str, y: str, z: str, q: str,**kwargs) -> dict:
+def transform_coordinates_into_message(*args,id: str="NONE", mac: str="aa:bb:cc:dd", x: str="0", y: str="0", z: str="0", q: str="0",**kwargs) -> dict:
+    print("ARGS",args)
+    print("KWARGS",kwargs)
     return {
         "time": 0,
         "fields": {

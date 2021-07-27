@@ -1,5 +1,5 @@
 pyserial
-mqttools
+mqttools<0.47.0
 influxdb
 pymodm
 gpiozero

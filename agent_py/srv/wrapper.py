@@ -152,7 +152,8 @@ async def wrapper_serial_callback_pub(
     connection_delays = connection_delays if connection_delays is not None and len(
         connection_delays) > 0 and type(connection_delays[0]) == float else [0.1]
     # Avvio servizio
-    logger.debug("Inizio Seriale {}".format(serial_path))
+    logger.debug("Mqtt config:{}@{}:{}".format(channel,host,port))
+    logger.debug("Inizio Seriale {}:{}@{}".format(host,port,serial_path))
     while True:
         cli = Serial(serial_path, baudrate=baudrate, timeout=timeout)
         try:
