@@ -13,8 +13,8 @@ class RawSignal(MongoModel):
     'raw_content': '17->d537: SUCCESS 346 bias 351 fppwr -82858 rxpwr -80654 cifo 6545\n', 'sender': '17', 'receiver': 'd537'}}
     """
     # Dati collezionati
-    message_d_sender = fields.CharField(blank=True)  # ID
-    message_d_receiver = fields.CharField(blank=True)  # ID
+    message_d_sender = fields.CharField(blank=True)  # ID TAG
+    message_d_receiver = fields.CharField(blank=True)  # ID Ancora
     message_d_raw_distance = fields.CharField(blank=True)
     message_d_distance = fields.CharField(blank=True)
     message_d_first_peak_pwr = fields.CharField(blank=True)
@@ -63,8 +63,8 @@ class GoodSignal(MongoModel):
     'raw_content': '17->d537: SUCCESS 346 bias 351 fppwr -82858 rxpwr -80654 cifo 6545\n', 'sender': '17', 'receiver': 'd537'}}
     """
     # Dati collezionati
-    message_d_sender = fields.CharField(blank=True)  # ID
-    message_d_receiver = fields.CharField(blank=True)  # ID
+    message_d_sender = fields.CharField(blank=True)  # ID TAG
+    message_d_receiver = fields.CharField(blank=True)  # ID Ancora
     message_d_raw_distance = fields.CharField(blank=True)
     message_d_distance = fields.CharField(blank=True)
     message_d_first_peak_pwr = fields.CharField(blank=True)

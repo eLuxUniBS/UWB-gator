@@ -24,8 +24,10 @@ led_obj = {label.lower().strip(): AllarmLedValue[label] for label in led_obj}
 
 def set_gpio(*args, input_message: dict = None, **kwargs):
     """
+    Riceve in input_message la combinazione da inviare ai gpio
     """
     logger.debug("HW DRIVER")
+    print("Input Message in HW Driver",input_message)
     flag = input_message.get("flag", None)
     if flag is None:
         logger.debug("Messaggio vuoto o errato\n{}".format(

@@ -1,7 +1,9 @@
 import math
 from datetime import datetime as dt
 
-counter=0
+counter = 0
+
+
 def movement(nodes: list, step=50, max_step=5000, ray=5000, step_ray=1):
     """
     Simulazione di movimento elementi presenti in area
@@ -25,7 +27,7 @@ def movement(nodes: list, step=50, max_step=5000, ray=5000, step_ray=1):
     if counter >= max_step:
         counter = 0
         step_ray *= -1
-    
+
     # values = []
     # columns = list(message[-1].keys())
     # for row in message:
@@ -36,16 +38,27 @@ def movement(nodes: list, step=50, max_step=5000, ray=5000, step_ray=1):
     #      columns=columns,
     #      values=values
     #  )])
-    data=[]
+    data = []
     for single in message:
-        data.append({
-            "time":0,
-           "fields": {
-               "mac": single["mac"], 
-               "x": single["x"],
-               "y": single["y"],
-               "z": single["z"],
-               "q": single["q"]},
-           "tags": {"id": single["id"], "ts": int(dt.utcnow().timestamp()*1e6)}
-         })         
-    return None, dict(query="save",data=data)
+        data.append(transform_coordinates_into_message(**single))            
+    return None, dict(query="save", data=data)
+
+
+def transform_coordinates_into_message(*args,id: str="NONE", mac: str="aa:bb:cc:dd", x: str="0", y: str="0", z: str="0", q: str="0",**kwargs) -> dict:
+    print("ARGS",args)
+    print("KWARGS",kwargs)
+    return {
+        "time": 0,
+        "fields": {
+            "mac": mac.strip(),
+            "x": float(str(x).strip()),
+            "y": float(str(y).strip()),
+            "z": float(str(z).strip()),
+            "q": int(str(q).strip())
+        },
+        "tags": {
+            "id": str(id).lower(),
+            "ts": int(dt.utcnow().timestamp()*1e6)
+        }
+    }
+

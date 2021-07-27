@@ -40,12 +40,14 @@ class CMDMode(Enum):
     pub_serial = "pub_serial"
     pub_update_net = "pub_update_net"
     pub_test_update_net = "pub_test_update_net"
+    pub_raspi_gpio="pub_raspi_gpio"
     sub_db_save_net = "sub_db_save_net"
     sub_db_rel = "sub_db_rel"
     sub_db_unrel = "sub_db_unrel"
     sub_db_serial = "sub_db_serial"
     sub_db_unrel_serial = "sub_db_unrel_serial"
     sub_raspi_gpio = "sub_raspi_gpio"
+    repeater_gpio_to_net="repeater_gpio_to_net"
     rilevamento_pacchetti = "rilevamento_pacchetti"
 
 
@@ -53,7 +55,6 @@ class CMDSerial(Enum):
     serial_opt_path = "serial_path"
     serial_opt_baudrate = "serial_baudrate"
     serial_opt_timeout = "serial_timeout"
-
 
 def launch_serial(host, port, cb, *args, serial_opt: str = None, channel: str = "/db_unrel", **kwargs):
     """
@@ -162,11 +163,11 @@ def launch(*args, **kwargs):
     elif mode == CMDMode.rilevamento_pacchetti:
         launch_rilevamento_pacchetti(*args,  **kwargs)
     # Comunicazione con GPIO: ricezione comandi per GPIO
-    elif mode == CMDMode.sub_raspi_gpio:
+    elif mode == CMDMode.pub_raspi_gpio:
         launch_serial(
             *args, cb=pubs.cmd_serial.unitn_raw_detect_allarm, channel="/gpio/update", **kwargs)
     # Comunicazione con GPIO: richiesta accensione GPIO
-    elif mode == CMDMode.pub_raspi_gpio:
+    elif mode == CMDMode.sub_raspi_gpio:
         launch_cli_client([wrapper_callback_sub(port=port, host=host,
                                                 channel="/gpio/update",
                                                 cb=subs.cmd_gpio_raspi.set_gpio,
@@ -174,6 +175,16 @@ def launch(*args, **kwargs):
                                                     CMDOption.param_time_before.value)),
                                                 time_wait_after=float(kwargs.get(
                                                     CMDOption.param_time_after.value))
+                                                )])
+    elif mode == CMDMode.repeater_gpio_to_net:
+        launch_cli_client([wrapper_callback_sub(port=port, host=host,
+                                                channel="/gpio/update",
+                                                cb=subs.cmd_simulation.echo,
+                                                time_wait_before=float(kwargs.get(
+                                                    CMDOption.param_time_before.value)),
+                                                time_wait_after=float(kwargs.get(
+                                                    CMDOption.param_time_after.value)),
+                                                topic_response="/net/update"
                                                 )])
     # Utility Generiche
     # Salvataggio dati su database influxdb (time-serial)
