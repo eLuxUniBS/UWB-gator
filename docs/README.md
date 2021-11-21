@@ -1,3 +1,8 @@
+---
+```
+Attenzione, questa parte è in fase di revisione. Considerare solamente la wiki allegata alla repo.
+```
+---
 # Come fare una rilevazione con il firmware UniTN
 
 Sia emittitore che ricevente devono poter accedere al broker. -p e -i permettono di impostare porta ed indirizzo ip del broker.
