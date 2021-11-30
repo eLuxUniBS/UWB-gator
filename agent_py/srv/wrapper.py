@@ -160,17 +160,18 @@ async def wrapper_serial_callback_pub(
             async with mqttools.Client(host=host, port=port, connect_delays=connection_delays) as client:
                 while True:
                     try:
+                        print("",end=".")
                         time.sleep(time_wait_before)
-                        logger.debug("ReadLine")
-                        buffer = cli.readline(buffer_read)
+                        #logger.debug("ReadLine")
+                        buffer = cli.readline(buffer_read)                        
                         cb_topic, cb_response = cb(
                             *args,
                             id_send=id_send,
                             input_message=buffer.decode("utf-8"),
                             **kwargs
                         )
-                        logger.debug("Verifica")
-                        logger.debug("Topic {}".format(cb_topic))
+                        #logger.debug("Verifica")
+                        #logger.debug("Topic {}".format(cb_topic))
                         if cb_topic == None:
                             cb_topic = channel
                         if cb_response == None:

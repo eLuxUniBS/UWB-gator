@@ -112,12 +112,10 @@ def unitn_raw_detect_allarm(*args, consider_raw_distance: bool = False, consider
         "payload", dict()).get("raw_distance", "")
     message["distance"] = message_content.get(
         "payload", dict()).get("distance", "")
-    # Passaggio dai valori numerici ad un flag testuale
-    print("A")
-    buffer = [x.split(".")[-1] for x in list(map(str, ColorCode))]
-    print("B",buffer)
+    # Passaggio dai valori numerici ad un flag testuale    
+    buffer = [x.split(".")[-1] for x in list(map(str, ColorCode))]    
     for field, scale in [(x, ColorCode[x]) for x in buffer]:
         if float(min(scale.value)) < float(message["allert_distance"]) <= float(max(scale.value)):
             message["flag"] = str(field).strip().lower()
-    print("MESSAGE",message)
+    print("\n[MESSAGE][",dt.utcnow(),"]",message)
     return None, message
