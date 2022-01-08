@@ -8,6 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define CHANNEL_PUBBLISH_TAG "/p2p/data"
+#define CHANNEL_PUBBLISH_SIZE_DATA 1024
 
 /* Callback called when the client receives a CONNACK message from the broker. */
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
@@ -17,7 +19,8 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 	 * clients is mosquitto_reason_string().
 	 */
 	printf("on_connect: %s\n", mosquitto_connack_string(reason_code));
-	if(reason_code != 0){
+	if (reason_code != 0)
+	{
 		/* If the connection fails for any reason, we don't want to keep on
 		 * retrying in this example, so disconnect. Without this, the client
 		 * will attempt to reconnect. */
@@ -27,7 +30,6 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 	/* You may wish to set a flag here to indicate to your application that the
 	 * client is now connected. */
 }
-
 
 /* Callback called when the client knows to the best of its abilities that a
  * PUBLISH has been successfully sent. For QoS 0 this means the message has
@@ -39,22 +41,21 @@ void on_publish(struct mosquitto *mosq, void *obj, int mid)
 	printf("Message with mid %d has been published.\n", mid);
 }
 
-
-int get_temperature(void)
+int get_data(void)
 {
 	sleep(1); /* Prevent a storm of messages - this pretend sensor works at 1Hz */
-	return random()%100;
+	return random() % 100;
 }
 
 /* This function pretends to read some data from a sensor and publish it.*/
 void publish_sensor_data(struct mosquitto *mosq)
 {
-	char payload[1024];
+	char payload[CHANNEL_PUBBLISH_SIZE_DATA];
 	int temp;
 	int rc;
 
 	/* Get our pretend data */
-	temp = get_temperature();
+	temp = get_data();
 	/* Print it to a string for easy human reading - payload format is highly
 	 * application dependent. */
 	snprintf(payload, sizeof(payload), "%d", temp);
@@ -68,12 +69,12 @@ void publish_sensor_data(struct mosquitto *mosq)
 	 * qos = 2 - publish with QoS 2 for this example
 	 * retain = false - do not use the retained message feature for this message
 	 */
-	rc = mosquitto_publish(mosq, NULL, "/p2p/data", strlen(payload), payload, 2, false);
-	if(rc != MOSQ_ERR_SUCCESS){
+	rc = mosquitto_publish(mosq, NULL, CHANNEL_PUBBLISH_TAG, strlen(payload), payload, 2, false);
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
 		fprintf(stderr, "Error publishing: %s\n", mosquitto_strerror(rc));
 	}
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -89,7 +90,8 @@ int main(int argc, char *argv[])
 	 * obj = NULL -> we aren't passing any of our private data for callbacks
 	 */
 	mosq = mosquitto_new(NULL, true, NULL);
-	if(mosq == NULL){
+	if (mosq == NULL)
+	{
 		fprintf(stderr, "Error: Out of memory.\n");
 		return 1;
 	}
@@ -103,7 +105,8 @@ int main(int argc, char *argv[])
 	 * CONNECT/CONNACK flow, you should use mosquitto_loop_start() or
 	 * mosquitto_loop_forever() for processing net traffic. */
 	rc = mosquitto_connect(mosq, "test.mosquitto.org", 1883, 60);
-	if(rc != MOSQ_ERR_SUCCESS){
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
 		mosquitto_destroy(mosq);
 		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
 		return 1;
@@ -111,7 +114,8 @@ int main(int argc, char *argv[])
 
 	/* Run the network loop in a background thread, this call returns quickly. */
 	rc = mosquitto_loop_start(mosq);
-	if(rc != MOSQ_ERR_SUCCESS){
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
 		mosquitto_destroy(mosq);
 		fprintf(stderr, "Error: %s\n", mosquitto_strerror(rc));
 		return 1;
@@ -124,11 +128,11 @@ int main(int argc, char *argv[])
 	 * the connect callback.
 	 * In this case we know it is 1 second before we start publishing.
 	 */
-	while(1){
+	while (1)
+	{
 		publish_sensor_data(mosq);
 	}
 
 	mosquitto_lib_cleanup();
 	return 0;
 }
-
